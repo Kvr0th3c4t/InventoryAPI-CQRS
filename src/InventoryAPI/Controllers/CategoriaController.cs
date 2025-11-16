@@ -72,4 +72,6 @@ public class CategoriaController : ControllerBase
 
         return NoContent();
     }
+
+    
 }
