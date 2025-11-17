@@ -47,17 +47,32 @@ public class MovimientosStockController : ControllerBase
     [HttpPost]
     public async Task<ActionResult> Create([FromBody] CreateMovimientoStockDto dto)
     {
-        var command = new CreateMovimientoStockCommand(
-            dto.ProductoId,
-            dto.ProveedorId,
-            dto.Tipo,
-            dto.Cantidad,
-            dto.Razon
-        );
+        try
+        {
+            var command = new CreateMovimientoStockCommand(
+                dto.ProductoId,
+                dto.ProveedorId,
+                dto.Tipo,
+                dto.Cantidad,
+                dto.Razon
+            );
 
-        var result = await _mediator.Send(command);
+            var result = await _mediator.Send(command);
 
-        return CreatedAtAction(nameof(GetMovimientoById), new { id = result.Id }, result);
+            return CreatedAtAction(nameof(GetMovimientoById), new { id = result.Id }, result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
 }
