@@ -4,7 +4,7 @@ using MediatR;
 
 namespace InventoryAPI.Features.Productos.Queries.GetAllProductos;
 
-public class GetAllProductosQueryHandler : IRequestHandler<GetAllProductosQuery, IEnumerable<ResponseProductoDto>>
+public class GetAllProductosQueryHandler : IRequestHandler<GetAllProductosQuery, IEnumerable<ProductoResponseDto>>
 {
     private readonly IProductoRepository _productoRepository;
     private readonly ICategoriaRepository _categoriaRepository;
@@ -15,7 +15,7 @@ public class GetAllProductosQueryHandler : IRequestHandler<GetAllProductosQuery,
         _productoRepository = productoRepository;
     }
 
-    public Task<IEnumerable<ResponseProductoDto>> Handle(GetAllProductosQuery request, CancellationToken cancellationToken)
+    public Task<IEnumerable<ProductoResponseDto>> Handle(GetAllProductosQuery request, CancellationToken cancellationToken)
     {
         var productos = _productoRepository.GetAll();
 
@@ -29,7 +29,7 @@ public class GetAllProductosQueryHandler : IRequestHandler<GetAllProductosQuery,
                         $"Producto {producto.Id} tiene categoría inválida {producto.CategoriaId}");
 
 
-                return new ResponseProductoDto
+                return new ProductoResponseDto
                 {
                     Id = producto.Id,
                     Nombre = producto.Nombre,

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using InventoryAPI.Dtos.CategoriaDtos;
+using InventoryAPI.Dtos.ProductoDtos;
 using InventoryAPI.IntegrationTests.Infrastructure;
 
 namespace InventoryAPI.IntegrationTests.Tests.Categorias;
@@ -109,8 +110,8 @@ public class CategoriaTests : IntegrationTestsBase
 
         // When
         var response = await Client.PutAsJsonAsync($"/api/Categoria/{Id}", updateDto);
-        // Then
 
+        // Then
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var categoria = await response.Content.ReadFromJsonAsync<CategoriaResponseDto>();
@@ -134,13 +135,73 @@ public class CategoriaTests : IntegrationTestsBase
         var createResponse = await Client.PostAsJsonAsync("/api/Categoria", createDto);
         var createdCategoria = await createResponse.Content.ReadFromJsonAsync<CategoriaResponseDto>();
         var Id = createdCategoria!.Id;
+
         // When
         var response = await Client.DeleteAsync($"/api/Categoria/{Id}");
+
         // Then
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var checkDelete = await Client.GetAsync($"/api/Categoria/{Id}");
 
-        checkDelete.StatusCode.Should().NotBe(HttpStatusCode.OK);
+        checkDelete.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Create_Producto_WithInvalidCategoriaId_ReturnsBadRequest()
+    {
+        // Given 
+        var createProductoDto = new CreateProductoDto
+        {
+            Nombre = "Portátil Gaming",
+            CategoriaId = 99999,  // ❌ Este ID no existe
+            StockActual = 50,
+            StockMinimo = 10,
+            Precio = 1299.99m
+        };
+
+        // When
+        var response = await Client.PostAsJsonAsync("/api/Productos", createProductoDto);
+
+        // Then
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Create_Producto_GeneratesUniqueSKU()
+    {
+        // Given 
+        var createCategoriaDto = new CreateCategoriaDto
+        {
+            Nombre = "Electrónica",
+            Descripcion = "Productos electrónicos"
+        };
+
+        var categoriaResponse = await Client.PostAsJsonAsync("/api/Categoria", createCategoriaDto);
+        var categoria = await categoriaResponse.Content.ReadFromJsonAsync<CategoriaResponseDto>();
+        var categoriaId = categoria!.Id;
+
+        var createProductoDto = new CreateProductoDto
+        {
+            Nombre = "Teclado Mecánico",
+            CategoriaId = categoriaId,
+            StockActual = 100,
+            StockMinimo = 20,
+            Precio = 89.99m
+        };
+
+        // When
+        var response = await Client.PostAsJsonAsync("/api/Productos", createProductoDto);
+        var producto = await response.Content.ReadFromJsonAsync<ProductoResponseDto>();
+
+        // Then 
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        producto!.SKU.Should().NotBeNullOrEmpty();
+        producto.SKU.Should().StartWith("PROD-");
+        producto.SKU.Length.Should().Be(13);
+
+        var guidPart = producto.SKU.Substring(5);
+        guidPart.Should().MatchRegex("^[A-Za-z0-9]{8}$");
     }
 }

@@ -5,4 +5,4 @@ namespace InventoryAPI.Features.Productos.Queries.GetProductoById;
 
 public record GetProductoByIdQuery(
     int Id
-) : IRequest<ResponseProductoDto>;
+) : IRequest<ProductoResponseDto>;

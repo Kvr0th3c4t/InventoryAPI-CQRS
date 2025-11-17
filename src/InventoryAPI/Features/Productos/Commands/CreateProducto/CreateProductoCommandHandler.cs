@@ -5,7 +5,7 @@ using MediatR;
 
 namespace InventoryAPI.Features.Productos.Commands.CreateProducto;
 
-public class CreateProductoCommandHandler : IRequestHandler<CreateProductoCommand, ResponseProductoDto>
+public class CreateProductoCommandHandler : IRequestHandler<CreateProductoCommand, ProductoResponseDto>
 {
     private readonly IProductoRepository _productoRepository;
     private readonly ICategoriaRepository _categoriaRepository;
@@ -16,7 +16,7 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
         _productoRepository = productoRepository;
     }
 
-    public Task<ResponseProductoDto> Handle(CreateProductoCommand request, CancellationToken cancellationToken)
+    public Task<ProductoResponseDto> Handle(CreateProductoCommand request, CancellationToken cancellationToken)
     {
         if (request.Precio < 0)
             throw new ArgumentException("El precio no puede ser negativo");
@@ -47,7 +47,7 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
 
         var productoCreado = _productoRepository.Add(producto);
 
-        var response = new ResponseProductoDto
+        var response = new ProductoResponseDto
         {
             Id = productoCreado.Id,
             Nombre = productoCreado.Nombre,

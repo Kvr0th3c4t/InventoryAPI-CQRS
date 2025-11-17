@@ -31,9 +31,17 @@ public class ProveedorController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> GetProveedorById(int id)
     {
-        var query = new GetProveedorByIdQuery(id);
-        var result = await _mediator.Send(query);
-        return Ok(result);
+        try
+        {
+            var query = new GetProveedorByIdQuery(id);
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+
     }
 
     [HttpPost]
@@ -53,27 +61,47 @@ public class ProveedorController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateProveedor(int id, [FromBody] UpdateProveedorDto dto)
     {
-        var command = new UpdateProveedorCommand(
+        try
+        {
+            var command = new UpdateProveedorCommand(
             id,
             dto.Nombre,
             dto.Email,
             dto.Telefono
         );
 
-        var result = await _mediator.Send(command);
+            var result = await _mediator.Send(command);
 
-        return Ok(result);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteProveedor(int id)
     {
-
-        var command = new DeleteProveedorCommand(id);
-
-        await _mediator.Send(command);
-
-        return NoContent();
+        try
+        {
+            var command = new DeleteProveedorCommand(id);
+            var result = await _mediator.Send(command);
+            return result ? NoContent() : NotFound();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
 
     }
 }

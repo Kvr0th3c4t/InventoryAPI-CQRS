@@ -1,6 +1,6 @@
 namespace InventoryAPI.Dtos.ProductoDtos;
 
-public class ResponseProductoDto
+public class ProductoResponseDto
 {
     public int Id { get; set; }
     public string Nombre { get; set; } = string.Empty;

@@ -11,4 +11,4 @@ public record CreateProductoCommand
     int StockActual,
     int StockMinimo,
     decimal Precio
-) : IRequest<ResponseProductoDto>;
+) : IRequest<ProductoResponseDto>;

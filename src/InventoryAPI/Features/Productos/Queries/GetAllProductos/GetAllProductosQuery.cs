@@ -3,4 +3,4 @@ using MediatR;
 
 namespace InventoryAPI.Features.Productos.Queries.GetAllProductos;
 
-public record GetAllProductosQuery() : IRequest<IEnumerable<ResponseProductoDto>>;
+public record GetAllProductosQuery() : IRequest<IEnumerable<ProductoResponseDto>>;

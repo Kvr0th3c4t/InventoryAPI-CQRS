@@ -6,6 +6,7 @@ using InventoryAPI.Features.Categorias.Queries.GetAllCategorias;
 using InventoryAPI.Features.Categorias.Queries.GetCategoriaById;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace InventoryAPI.Controllers;
 
@@ -32,9 +33,17 @@ public class CategoriaController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> GetCategoriaById(int id)
     {
-        var query = new GetCategoriaByIdQuery(id);
-        var result = await _mediator.Send(query);
-        return Ok(result);
+        try
+        {
+            var query = new GetCategoriaByIdQuery(id);
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+
     }
 
     [HttpPost]
@@ -53,25 +62,43 @@ public class CategoriaController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateCategoria(int id, [FromBody] UpdateCategoriaDto dto)
     {
-        var command = new UpdateCategoriaCommand
+        try
+        {
+            var command = new UpdateCategoriaCommand
         (
             id,
             dto.Nombre,
             dto.Descripcion
         );
 
-        var result = await _mediator.Send(command);
-        return Ok(result);
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteCategoria(int id)
     {
-        var command = new DeleteCategoriaCommand(id);
-        await _mediator.Send(command);
-
-        return NoContent();
+        try
+        {
+            var command = new DeleteCategoriaCommand(id);
+            var result = await _mediator.Send(command);
+            return result ? NoContent() : NotFound();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
     }
 
-    
+
 }

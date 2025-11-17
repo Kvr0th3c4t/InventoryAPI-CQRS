@@ -33,15 +33,24 @@ public class ProductosController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetProductById(int id)
     {
-        var query = new GetProductoByIdQuery(id);
-        var result = await _mediator.Send(query);
-        return Ok(result);
+        try
+        {
+            var query = new GetProductoByIdQuery(id);
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateProductoDto dto)
     {
-        var command = new CreateProductoCommand(
+        try
+        {
+            var command = new CreateProductoCommand(
             dto.Nombre,
             dto.Descripcion,
             dto.CategoriaId,
@@ -50,34 +59,60 @@ public class ProductosController : ControllerBase
             dto.Precio
         );
 
-        var result = await _mediator.Send(command);
-        return CreatedAtAction(nameof(GetProductById), new { id = result.Id }, result);
+            var result = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetProductById), new { id = result.Id }, result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductoDto dto)
     {
-        var command = new UpdateProductoCommand(
-            id,
-            dto.Nombre,
-            dto.Descripcion,
-            dto.StockActual,
-            dto.StockMinimo,
-            dto.CategoriaId,
-            dto.Precio
-        );
+        try
+        {
+            var command = new UpdateProductoCommand(
+               id,
+               dto.Nombre,
+               dto.Descripcion,
+               dto.StockActual,
+               dto.StockMinimo,
+               dto.CategoriaId,
+               dto.Precio
+           );
 
-        var result = await _mediator.Send(command);
+            var result = await _mediator.Send(command);
 
-        return Ok(result);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+
+            return NotFound();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProducto(int id)
     {
-        var command = new DeleteProductoCommand(id);
-        await _mediator.Send(command);
+        try
+        {
+            var command = new DeleteProductoCommand(id);
+            var result = await _mediator.Send(command);
+            return result ? NoContent() : NotFound();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
 
-        return NoContent();
     }
 }

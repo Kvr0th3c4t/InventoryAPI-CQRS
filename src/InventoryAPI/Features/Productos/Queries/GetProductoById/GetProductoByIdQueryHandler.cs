@@ -4,7 +4,7 @@ using MediatR;
 
 namespace InventoryAPI.Features.Productos.Queries.GetProductoById;
 
-public class GetProductoByIdQueryHandler : IRequestHandler<GetProductoByIdQuery, ResponseProductoDto>
+public class GetProductoByIdQueryHandler : IRequestHandler<GetProductoByIdQuery, ProductoResponseDto>
 {
     private readonly IProductoRepository _productoRepository;
     private readonly ICategoriaRepository _categoriaRepository;
@@ -15,7 +15,7 @@ public class GetProductoByIdQueryHandler : IRequestHandler<GetProductoByIdQuery,
         _categoriaRepository = categoriaRepository;
     }
 
-    public Task<ResponseProductoDto> Handle(GetProductoByIdQuery request, CancellationToken cancellationToken)
+    public Task<ProductoResponseDto> Handle(GetProductoByIdQuery request, CancellationToken cancellationToken)
     {
         var producto = _productoRepository.GetById(request.Id);
 
@@ -27,7 +27,7 @@ public class GetProductoByIdQueryHandler : IRequestHandler<GetProductoByIdQuery,
         if (categoria == null)
             throw new InvalidOperationException($"Producto {producto.Id} tiene categoría no válida");
 
-        var response = new ResponseProductoDto
+        var response = new ProductoResponseDto
         {
             Id = producto.Id,
             Nombre = producto.Nombre,

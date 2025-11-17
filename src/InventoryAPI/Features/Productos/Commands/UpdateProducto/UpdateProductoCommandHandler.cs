@@ -6,7 +6,7 @@ using MediatR;
 
 namespace InventoryAPI.Features.Productos.Commands.UpdateProducto;
 
-public class UpdateProductoCommandHandler : IRequestHandler<UpdateProductoCommand, ResponseProductoDto>
+public class UpdateProductoCommandHandler : IRequestHandler<UpdateProductoCommand, ProductoResponseDto>
 {
     private readonly IProductoRepository _productoRepository;
     private readonly ICategoriaRepository _categoriaRepository;
@@ -19,7 +19,7 @@ public class UpdateProductoCommandHandler : IRequestHandler<UpdateProductoComman
         _publisher = publisher;
     }
 
-    public Task<ResponseProductoDto> Handle(UpdateProductoCommand request, CancellationToken cancellationToken)
+    public Task<ProductoResponseDto> Handle(UpdateProductoCommand request, CancellationToken cancellationToken)
     {
         var producto = _productoRepository.GetById(request.Id);
 
@@ -74,7 +74,7 @@ public class UpdateProductoCommandHandler : IRequestHandler<UpdateProductoComman
             throw new ArgumentException("La categoría asignada no existe");
         }
 
-        var response = new ResponseProductoDto
+        var response = new ProductoResponseDto
         {
             Id = producto.Id,
             Nombre = producto.Nombre,

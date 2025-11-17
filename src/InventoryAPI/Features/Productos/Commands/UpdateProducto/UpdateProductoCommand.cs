@@ -12,4 +12,4 @@ public record UpdateProductoCommand
     int? StockMinimo,
     int? CategoriaId,
     decimal? Precio
-) : IRequest<ResponseProductoDto>;
+) : IRequest<ProductoResponseDto>;

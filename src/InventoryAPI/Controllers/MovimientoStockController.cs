@@ -29,11 +29,19 @@ public class MovimientosStockController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> GetMovimientoById(int id)
     {
-        var query = new GetMovimientoByIdQuery(id);
+        try
+        {
+            var query = new GetMovimientoByIdQuery(id);
 
-        var result = await _mediator.Send(query);
+            var result = await _mediator.Send(query);
 
-        return Ok(result);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+
     }
 
     [HttpPost]
