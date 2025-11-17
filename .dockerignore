@@ -1,0 +1,27 @@
+# Archivos de compilación
+**/bin/
+**/obj/
+**/out/
+
+# Archivos de usuario y configuración local
+**/.vs/
+**/.vscode/
+**/.idea/
+*.user
+*.suo
+
+# NuGet
+**/packages/
+**/.nuget/
+
+# Otros
+**/.git/
+**/.gitignore
+**/docker-compose*
+**/Dockerfile*
+**/.dockerignore
+**/node_modules/
+**/npm-debug.log
+**/README.md
+**/LICENSE
+**/.DS_Store

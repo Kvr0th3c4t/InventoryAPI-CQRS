@@ -22,6 +22,21 @@ builder.Services.AddMediatR(cfg =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate(); // Aplica las migrations pendientes
+        Console.WriteLine("✅ Migrations aplicadas correctamente");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error aplicando migrations: {ex.Message}");
+    }
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
