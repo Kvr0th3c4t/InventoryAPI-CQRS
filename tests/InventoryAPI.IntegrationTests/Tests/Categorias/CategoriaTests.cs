@@ -28,8 +28,8 @@ public class CategoriaTests : IntegrationTestsBase
         var categoria = await response.Content.ReadFromJsonAsync<CategoriaResponseDto>();
         categoria.Should().NotBeNull();
         categoria!.Id.Should().BeGreaterThan(0);
-        categoria.Nombre.Should().Be("Electrónica");
-        categoria.Descripcion.Should().Be("Productos electrónicos");
+        categoria.Nombre.Should().Be(createDto.Nombre);
+        categoria.Descripcion.Should().Be(createDto.Descripcion);
     }
 
     [Fact]
@@ -83,8 +83,8 @@ public class CategoriaTests : IntegrationTestsBase
 
         categoria.Should().NotBeNull();
         categoria!.Id.Should().Be(Id);
-        categoria.Nombre.Should().Be("Electrónica");
-        categoria.Descripcion.Should().Be("Productos electrónicos");
+        categoria.Nombre.Should().Be(createDto.Nombre);
+        categoria.Descripcion.Should().Be(createDto.Descripcion);
 
     }
 
@@ -117,8 +117,8 @@ public class CategoriaTests : IntegrationTestsBase
         var categoria = await response.Content.ReadFromJsonAsync<CategoriaResponseDto>();
 
         categoria!.Id.Should().Be(Id);
-        categoria!.Nombre.Should().Be("Nombre modificado");
-        categoria!.Descripcion.Should().Be("Descripción modificada");
+        categoria!.Nombre.Should().Be(updateDto.Nombre);
+        categoria!.Descripcion.Should().Be(updateDto.Descripcion);
 
     }
 

@@ -5,7 +5,7 @@ using InventoryAPI.Dtos.CategoriaDtos;
 using InventoryAPI.Dtos.ProductoDtos;
 using InventoryAPI.IntegrationTests.Infrastructure;
 
-namespace InventoryAPI.IntegrationTests.Tests.Categorias;
+namespace InventoryAPI.IntegrationTests.Tests.Productos;
 
 public class ProductoTests : IntegrationTestsBase
 {
@@ -42,11 +42,11 @@ public class ProductoTests : IntegrationTestsBase
         var producto = await response.Content.ReadFromJsonAsync<ProductoResponseDto>();
         producto.Should().NotBeNull();
         producto!.Id.Should().BeGreaterThan(0);
-        producto.Nombre.Should().Be("Portatil");
+        producto.Nombre.Should().Be(createProductoDto.Nombre);
         producto.Descripcion.Should().BeNull();
         producto.SKU.Should().NotBeNull();
         producto.CategoriaId.Should().Be(1);
-        producto.CategoriaNombre.Should().Be("Electrónica");
+        producto.CategoriaNombre.Should().Be(createCategoriaDto.Nombre);
         producto.StockActual.Should().Be(100);
         producto.Precio.Should().Be(12);
     }
@@ -130,11 +130,11 @@ public class ProductoTests : IntegrationTestsBase
         var producto = await response.Content.ReadFromJsonAsync<ProductoResponseDto>();
         producto.Should().NotBeNull();
         producto!.Id.Should().Be(IdProducto);
-        producto.Nombre.Should().Be("Portatil");
+        producto.Nombre.Should().Be(createProductoDto.Nombre);
         producto.Descripcion.Should().BeNull();
         producto.SKU.Should().NotBeNull();
         producto.CategoriaId.Should().Be(IdCategoria);
-        producto.CategoriaNombre.Should().Be("Electrónica");
+        producto.CategoriaNombre.Should().Be(createCategoriaDto.Nombre);
         producto.StockActual.Should().Be(100);
         producto.Precio.Should().Be(12);
 
@@ -197,11 +197,11 @@ public class ProductoTests : IntegrationTestsBase
         var producto = await response.Content.ReadFromJsonAsync<ProductoResponseDto>();
         producto.Should().NotBeNull();
         producto!.Id.Should().Be(IdProducto);
-        producto.Nombre.Should().Be("Producto modificado");
-        producto.Descripcion.Should().Be("Descripcion modificada");
+        producto.Nombre.Should().Be(updateDto.Nombre);
+        producto.Descripcion.Should().Be(updateDto.Descripcion);
         producto.SKU.Should().NotBeNull();
         producto.CategoriaId.Should().Be(IdCategoria2);
-        producto.CategoriaNombre.Should().Be("Categoria 2");
+        producto.CategoriaNombre.Should().Be(createCategoria2Dto.Nombre);
         producto.StockActual.Should().Be(50);
         producto.Precio.Should().Be(10);
 
