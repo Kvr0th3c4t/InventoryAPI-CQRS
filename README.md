@@ -1,355 +1,310 @@
-# 📦 InventoryAPI - Sistema de Gestión de Inventario
+# 📦 InventoryAPI-CQRS
 
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![C#](https://img.shields.io/badge/C%23-12.0-239120?logo=c-sharp)](https://docs.microsoft.com/en-us/dotnet/csharp/)
-[![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-9.0-512BD4)](https://docs.microsoft.com/en-us/aspnet/core/)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?logo=docker)](https://www.docker.com/)
 [![SQL Server](https://img.shields.io/badge/SQL%20Server-2022-CC2927?logo=microsoft-sql-server)](https://www.microsoft.com/sql-server)
-[![Tests](https://img.shields.io/badge/Tests-25%20Passing-success)](https://github.com/Kvr0th3c4t/InventoryAPI-CQRS)
+[![Tests](https://img.shields.io/badge/tests-25%20passing-success)](tests/)
+[![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker)](docker-compose.yml)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-> API RESTful moderna para gestión de inventarios implementada con **CQRS Pattern**, **MediatR**, **Repository Pattern** y **Docker**. Proyecto educativo demostrando arquitectura limpia y buenas prácticas en ASP.NET Core.
 
----
-
-## 📋 Tabla de Contenidos
-
-- [Características Principales](#-características-principales)
-- [Arquitectura y Patrones](#️-arquitectura-y-patrones)
-- [Tecnologías Utilizadas](#-tecnologías-utilizadas)
-- [Modelo de Dominio](#-modelo-de-dominio)
-- [Instalación y Configuración](#-instalación-y-configuración)
-- [Uso con Docker](#-uso-con-docker)
-- [Ejecutar Tests](#-ejecutar-tests)
-- [Documentación de API](#-documentación-de-api)
-- [Endpoints Disponibles](#-endpoints-disponibles)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Roadmap](#-roadmap)
+> Sistema de gestión de inventario desarrollado con **ASP.NET Core 9.0** aplicando **principios SOLID**, **CQRS**, **testing avanzado** y arquitectura preparada para **entornos cloud**.
 
 ---
 
-## ✨ Características Principales
+## 🎯 **Sobre este proyecto**
 
-- ✅ **CQRS con MediatR** - Separación completa de Commands y Queries
-- ✅ **Repository Pattern** - Abstracción de acceso a datos
-- ✅ **Event Publisher** - Sistema de eventos de dominio (ej: Stock Bajo)
-- ✅ **Docker Ready** - Dockerfile multi-stage optimizado
-- ✅ **Integration Tests** - 25 tests con Testcontainers
-- ✅ **Entity Framework Core** - Code-First con Migrations
-- ✅ **Swagger/OpenAPI** - Documentación automática de API
-- ✅ **DTOs separados** - Request/Response con validación
-- ✅ **Manejo de excepciones** - Códigos HTTP apropiados
-- ✅ **Datos persistentes** - Volúmenes Docker para SQL Server
+Este es mi primer proyecto **end-to-end** con ASP.NET Core donde implemento las mejores prácticas de la industria. El objetivo fue construir una API REST profesional que demuestre:
+
+- ✅ Aplicación de **principios SOLID**
+- ✅ Arquitectura **CQRS** con separación clara de responsabilidades
+- ✅ Testing robusto con **Testcontainers** (simulación de infraestructura real)
+- ✅ Diseño **cloud-ready** usando Docker como preparación para Azure
 
 ---
 
-## 🏗️ Arquitectura y Patrones
+## 🏗️ **Arquitectura**
 
-### **CQRS (Command Query Responsibility Segregation)**
-
-La aplicación separa completamente las operaciones de **lectura** (Queries) y **escritura** (Commands):
-
+```mermaid
+graph TB
+    subgraph "API Layer"
+        A[Controllers] --> B[MediatR]
+    end
+    
+    subgraph "Application Layer - CQRS"
+        B --> C[Commands]
+        B --> D[Queries]
+        C --> E[Command Handlers]
+        D --> F[Query Handlers]
+        B --> G[ValidationBehavior]
+        G --> E
+        G --> F
+    end
+    
+    subgraph "Domain Layer"
+        E --> H[Domain Events]
+        H --> I[IEventPublisher]
+        I -.-> J[ConsoleEventPublisher]
+        I -.-> K[FuturePublisher - Azure Service Bus]
+    end
+    
+    subgraph "Infrastructure Layer"
+        E --> L[UnitOfWork]
+        F --> L
+        L --> M[Repositories]
+        M --> N[(SQL Server)]
+    end
+    
+    style I fill:#FFD700,stroke:#FF8C00,stroke-width:3px
+    style G fill:#90EE90,stroke:#228B22,stroke-width:2px
+    style B fill:#87CEEB,stroke:#4682B4,stroke-width:2px
 ```
+
+**Flujo típico:**
+1. **Request** → Controller recibe DTO
+2. **Validación** → FluentValidation en pipeline de MediatR
+3. **Procesamiento** → Handler ejecuta lógica (Command/Query)
+4. **Eventos** → Se disparan eventos de dominio (ej: stock bajo)
+5. **Persistencia** → UnitOfWork coordina transacciones
+
+---
+
+## 💡 **Decisiones técnicas clave**
+
+### **1️⃣ SOLID en acción: EventPublisher plug-and-play**
+
+El sistema de eventos implementa el **Principio de Inversión de Dependencias (DIP)**:
+
+```csharp
+// Interfaz en Domain - no depende de implementaciones
+public interface IEventPublisher
+{
+    Task PublishAsync<TEvent>(TEvent domainEvent) where TEvent : class;
+}
+
+// Implementación actual - Consola (desarrollo)
+public class ConsoleEventPublisher : IEventPublisher { ... }
+
+// Futura implementación - Azure Service Bus (producción)
+public class AzureServiceBusEventPublisher : IEventPublisher { ... }
+```
+
+**Registro en `Program.cs`:**
+```csharp
+// Desarrollo
+builder.Services.AddScoped<IEventPublisher, ConsoleEventPublisher>();
+
+// Producción (futuro)
+// builder.Services.AddScoped<IEventPublisher, AzureServiceBusEventPublisher>();
+```
+
+---
+
+### **2️⃣ CQRS con MediatR: Separación de responsabilidades**
+
+**Commands** modifican estado, **Queries** solo leen. Sin mezclas.
+
+```csharp
+// ❌ ANTES: Todo mezclado en un servicio
+public class ProductoService {
+    public Producto GetById(int id) { }
+    public void Create(Producto p) { }
+    public void Update(Producto p) { }
+}
+
+// ✅ AHORA: Separación clara
 Features/
 ├── Productos/
-│   ├── Commands/
-│   │   ├── CreateProducto/
-│   │   │   ├── CreateProductoCommand.cs
-│   │   │   └── CreateProductoCommandHandler.cs
-│   │   ├── UpdateProducto/
-│   │   └── DeleteProducto/
-│   └── Queries/
-│       ├── GetProductoById/
-│       │   ├── GetProductoByIdQuery.cs
-│       │   └── GetProductoByIdQueryHandler.cs
-│       └── GetAllProductos/
+    ├── Commands/CreateProducto/     ← Escribe
+    ├── Commands/UpdateProducto/     ← Escribe
+    ├── Queries/GetProductoById/     ← Lee
+    └── Queries/GetAllProductos/     ← Lee
 ```
 
 **Ventajas:**
-- 📊 Optimización independiente de lecturas y escrituras
-- 🧩 Código más mantenible y testeable
-- 🔍 Separación clara de responsabilidades
-- 🚀 Escalabilidad mejorada
-
-### **Patrones Implementados**
-
-| Patrón | Implementación | Beneficio |
-|--------|----------------|-----------|
-| **CQRS** | MediatR | Separación Commands/Queries |
-| **Repository** | Interfaces + EF Core | Abstracción de datos |
-| **Event Publisher** | IEventPublisher | Desacoplamiento de eventos |
-| **DTO Pattern** | Request/Response DTOs | Validación y mapeo |
-| **Dependency Injection** | Built-in DI | Inversión de dependencias |
+- 🎯 **Single Responsibility**: Cada handler hace UNA cosa
+- 🎯 **Escalabilidad**: Queries pueden optimizarse independientemente (ej: caché, read replicas)
+- 🎯 **Testeo aislado**: Testeo commands sin tocar queries
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+### **3️⃣ FluentValidation + Pipeline Behavior**
 
-### **Backend**
-- **ASP.NET Core 9.0** - Framework web
-- **C# 12** - Lenguaje de programación
-- **Entity Framework Core 9.0** - ORM
-- **MediatR 13.1** - Implementación CQRS
-- **SQL Server 2022** - Base de datos
+Las validaciones se ejecutan **antes** de llegar al handler gracias al pipeline de MediatR:
+
+```csharp
+public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+{
+    // Intercepta TODAS las requests
+    // Valida con FluentValidation
+    // Si hay errores → lanza ValidationException
+    // Si está OK → continúa al handler
+}
+```
+
+**Resultado:**
+- ✅ Handlers **siempre** reciben datos válidos
+- ✅ Validaciones reutilizables y testeables
+- ✅ Código limpio: handlers sin `if (string.IsNullOrEmpty(...))`
+
+---
+
+### **4️⃣ Docker como simulación de arquitectura cloud**
+
+El proyecto usa Docker no solo para "empaquetar", sino para **replicar localmente** lo que sería una arquitectura en Azure:
+
+```yaml
+# docker-compose.yml
+services:
+  sqlserver:        # ← Simula Azure SQL Database
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+```
+
+**¿Por qué Docker en desarrollo?**
+- ✅ **Paridad dev/prod**: Misma BD que en Azure SQL
+- ✅ **Tests realistas**: Testcontainers usa Docker → tests contra SQL Server real
+- ✅ **CI/CD ready**: Mismo contenedor en GitHub Actions, Azure Pipelines, etc.
+
+**Transición a Azure:**
+```
+Docker local → Azure Container Registry → Azure Container Instances/App Service
+SQL Server (Docker) → Azure SQL Database
+```
+
+---
+
+### **5️⃣ Testing con Testcontainers**
+
+**25 tests de integración** que levantan SQL Server real en Docker:
+
+```csharp
+public class IntegrationTestBase : IAsyncLifetime
+{
+    private readonly MsSqlContainer _dbContainer = new MsSqlBuilder()
+        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+        .Build();
+    
+    // Cada test tiene su propia BD limpia
+}
+```
+
+**Cobertura actual:**
+- ✅ **Productos**: 16 tests (CRUD + validaciones + eventos)
+- ✅ **Categorías**: 3 tests
+- ✅ **Proveedores**: 6 tests
+- ✅ **Movimientos Stock**: 6 tests
+
+**Tiempo de ejecución:** ~2 minutos (incluye levantar/destruir contenedores)
+
+---
+
+## 🛠️ **Stack tecnológico**
+
+| Categoría | Tecnología |
+|-----------|------------|
+| **Framework** | ASP.NET Core 9.0 |
+| **Patrones** | CQRS, Repository, Unit of Work, Domain Events |
+| **Mediación** | MediatR 12.x |
+| **Validación** | FluentValidation 11.x |
+| **ORM** | Entity Framework Core 9.0 |
+| **Base de datos** | SQL Server 2022 |
+| **Testing** | xUnit + Testcontainers |
+| **Contenedores** | Docker + Docker Compose |
+
+---
+
+## ⚡ **Características principales**
+
+### **Gestión de Inventario**
+- ✅ CRUD completo de **Productos**, **Categorías** y **Proveedores**
+- ✅ **Movimientos de stock** con tipos: Entrada, Salida, Ajuste+, Ajuste-
+- ✅ Generación automática de SKU para productos
+- ✅ Control de stock mínimo con eventos de alerta
+
+### **Arquitectura**
+- ✅ **CQRS** con MediatR para separación Commands/Queries
+- ✅ **Repository Pattern** + **Unit of Work** para transaccionalidad
+- ✅ **Domain Events** para notificaciones (stock bajo, etc.)
+- ✅ **Pipeline Behavior** para validaciones automáticas
+
+### **Validaciones**
+- ✅ FluentValidation en todos los Commands
+- ✅ Validación de reglas de negocio en Handlers
+- ✅ Respuestas estructuradas con errores claros
 
 ### **Testing**
-- **xUnit** - Framework de testing
-- **Testcontainers** - Contenedores para integration tests
-- **FluentAssertions** - Assertions expresivas
-
-### **DevOps**
-- **Docker** - Contenedorización
-- **Docker Compose** - Orquestación multi-contenedor
+- ✅ 25 tests de integración con Testcontainers
+- ✅ Tests contra SQL Server real (no mocks)
+- ✅ Cobertura de happy paths y casos de error
 
 ---
 
-## 📊 Modelo de Dominio
+## 🚀 **Quick Start**
 
-### **Entidades Principales**
+### **Prerrequisitos**
+- .NET 9.0 SDK
+- Docker Desktop
 
-```
-┌─────────────┐         ┌──────────────┐
-│  Categoria  │◄────────│  Producto    │
-└─────────────┘         └──────────────┘
-                              │
-                              │ 1:N
-                              ▼
-                        ┌──────────────────┐         ┌─────────────┐
-                        │ MovimientoStock  │────────►│  Proveedor  │
-                        └──────────────────┘         └─────────────┘
-```
-
-### **1. Producto**
-```csharp
-- Id: int
-- Nombre: string
-- SKU: string (auto-generado)
-- Descripcion: string?
-- StockActual: int
-- StockMinimo: int
-- Precio: decimal
-- FechaCreacion: DateTime
-- CategoriaId: int (FK)
-- ProveedorId: int? (nullable)
-```
-
-**Lógica de negocio:**
-- SKU se genera automáticamente: `PROD-{GUID}`
-- Si `StockActual < StockMinimo` → Dispara evento `StockBajoEvent`
-
-### **2. Categoria**
-```csharp
-- Id: int
-- Nombre: string
-- Descripcion: string?
-```
-
-### **3. Proveedor**
-```csharp
-- Id: int
-- Nombre: string
-- Email: string?
-- Telefono: string?
-```
-
-### **4. MovimientoStock**
-```csharp
-- Id: int
-- ProductoId: int (FK)
-- ProveedorId: int? (FK, nullable)
-- Tipo: TipoMovimiento (enum)
-- Cantidad: int
-- FechaMovimiento: DateTime
-- Razon: string?
-```
-
-**Tipos de Movimiento:**
-- `Entrada` (1) - Suma stock, **requiere ProveedorId**
-- `Salida` (2) - Resta stock
-- `AjustePositivo` (3) - Suma stock
-- `AjusteNegativo` (4) - Resta stock
-
-**Características:**
-- ✅ Inmutables (no tienen Update/Delete)
-- ✅ Actualizan automáticamente el stock del producto
-- ✅ Validación de stock suficiente en salidas
-
----
-
-## 🚀 Instalación y Configuración
-
-### **Requisitos Previos**
-
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop)
-- [Git](https://git-scm.com/)
-
-### **Clonar el Repositorio**
-
+### **1. Clonar repositorio**
 ```bash
 git clone https://github.com/Kvr0th3c4t/InventoryAPI-CQRS.git
 cd InventoryAPI-CQRS
 ```
 
----
-
-## 🐳 Uso con Docker
-
-### **Opción 1: Docker Compose (Recomendado)**
-
-La forma más rápida de ejecutar la aplicación:
-
+### **2. Levantar base de datos con Docker**
 ```bash
-# Arrancar API + SQL Server
-docker-compose up
-
-# O en modo detached (segundo plano)
 docker-compose up -d
 ```
 
-**Acceder a la aplicación:**
-- API: `http://localhost:5000`
-- Swagger: `http://localhost:5000/swagger`
-- SQL Server: `localhost:1433`
-
-**Credenciales SQL Server:**
-- Usuario: `sa`
-- Password: `YourStrong@Passw0rd`
-
-### **Comandos Útiles**
-
-```bash
-# Ver logs en tiempo real
-docker-compose logs -f
-
-# Ver logs solo de la API
-docker-compose logs -f api
-
-# Parar contenedores (conserva datos)
-docker-compose down
-
-# Parar y eliminar volúmenes (resetea BBDD)
-docker-compose down -v
-
-# Ver estado de contenedores
-docker-compose ps
-
-# Reconstruir imágenes
-docker-compose up --build
-```
-
-### **Opción 2: Ejecución Local (Sin Docker)**
-
-**1. Configurar SQL Server local:**
-
-Editar `src/InventoryAPI/appsettings.json`:
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=InventoryDB;Trusted_Connection=True;TrustServerCertificate=True;"
-  }
-}
-```
-
-**2. Aplicar migrations:**
+### **3. Ejecutar migraciones**
 ```bash
 cd src/InventoryAPI
 dotnet ef database update
 ```
 
-**3. Ejecutar la API:**
+### **4. Ejecutar la API**
 ```bash
 dotnet run
 ```
 
+La API estará disponible en: **https://localhost:5001/swagger**
+
 ---
 
-## 🧪 Ejecutar Tests
-
-La suite de tests incluye **25 integration tests** usando **Testcontainers** (cada test usa su propio SQL Server temporal).
-
-### **Ejecutar todos los tests:**
+## 🧪 **Ejecutar tests**
 
 ```bash
+cd tests/InventoryAPI.IntegrationTests
 dotnet test
 ```
 
 **Salida esperada:**
 ```
-Resumen de pruebas: total: 25; con errores: 0; correcto: 25; omitido: 0
+Passed!  - Failed:     0, Passed:    25, Skipped:     0, Total:    25
+Time:   ~2 min
 ```
 
-### **Ejecutar tests por entidad:**
-
-```bash
-# Solo tests de Productos (7 tests)
-dotnet test --filter ProductoTests
-
-# Solo tests de Categorías (5 tests)
-dotnet test --filter CategoriaTests
-
-# Solo tests de Proveedores (6 tests)
-dotnet test --filter ProveedorTests
-
-# Solo tests de MovimientosStock (7 tests)
-dotnet test --filter MovimientoStockTests
-```
-
-### **Tests con más detalle:**
-
-```bash
-dotnet test --logger "console;verbosity=detailed"
-```
-
-### **Cobertura de Tests**
-
-| Entidad | Tests | Cobertura |
-|---------|-------|-----------|
-| **Productos** | 7 | ✅ CRUD + Validaciones + SKU |
-| **Categorías** | 5 | ✅ CRUD Completo |
-| **Proveedores** | 6 | ✅ CRUD + Validación integridad |
-| **MovimientosStock** | 7 | ✅ Create + Queries + Validaciones |
-| **TOTAL** | **25** | **100%** |
+Los tests levantarán automáticamente un contenedor SQL Server, ejecutarán las pruebas y limpiarán los recursos.
 
 ---
 
-## 📚 Documentación de API
+## 📡 **Ejemplos de uso**
 
-### **Swagger UI**
-
-La documentación interactiva está disponible en:
-
-```
-http://localhost:5000/swagger
-```
-
-Desde Swagger puedes:
-- 📖 Ver todos los endpoints disponibles
-- 🧪 Probar cada endpoint directamente
-- 📋 Ver los modelos de Request/Response
-- 🔍 Explorar los códigos de respuesta HTTP
-
----
-
-## 📡 Endpoints Disponibles
-
-### **🏷️ Categorías**
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/api/Categoria` | Obtener todas las categorías |
-| `GET` | `/api/Categoria/{id}` | Obtener categoría por ID |
-| `POST` | `/api/Categoria` | Crear nueva categoría |
-| `PUT` | `/api/Categoria/{id}` | Actualizar categoría |
-| `DELETE` | `/api/Categoria/{id}` | Eliminar categoría |
-
-**Ejemplo - Crear Categoría:**
-```http
-POST /api/Categoria
+### **Crear un producto**
+```bash
+POST /api/productos
 Content-Type: application/json
 
 {
-  "nombre": "Electrónica",
-  "descripcion": "Productos electrónicos y tecnológicos"
+  "nombre": "Laptop HP",
+  "descripcion": "Laptop empresarial",
+  "categoriaId": 1,
+  "precio": 899.99,
+  "stockActual": 50,
+  "stockMinimo": 10
 }
 ```
 
@@ -357,279 +312,107 @@ Content-Type: application/json
 ```json
 {
   "id": 1,
-  "nombre": "Electrónica",
-  "descripcion": "Productos electrónicos y tecnológicos"
+  "nombre": "Laptop HP",
+  "sku": "PROD-00001",  // ← Generado automáticamente
+  "stockActual": 50,
+  "fechaCreacion": "2024-11-18T10:30:00Z"
 }
 ```
 
----
-
-### **📦 Productos**
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/api/Productos` | Obtener todos los productos |
-| `GET` | `/api/Productos/{id}` | Obtener producto por ID |
-| `POST` | `/api/Productos` | Crear nuevo producto |
-| `PUT` | `/api/Productos/{id}` | Actualizar producto |
-| `DELETE` | `/api/Productos/{id}` | Eliminar producto |
-
-**Ejemplo - Crear Producto:**
-```http
-POST /api/Productos
-Content-Type: application/json
-
-{
-  "nombre": "Laptop Dell XPS 15",
-  "descripcion": "Laptop de alta gama para desarrollo",
-  "categoriaId": 1,
-  "stockActual": 10,
-  "stockMinimo": 5,
-  "precio": 1499.99
-}
-```
-
-**Respuesta:**
-```json
-{
-  "id": 1,
-  "nombre": "Laptop Dell XPS 15",
-  "descripcion": "Laptop de alta gama para desarrollo",
-  "sku": "PROD-A3F5B2C1",
-  "categoriaId": 1,
-  "categoriaNombre": "Electrónica",
-  "stockActual": 10,
-  "precio": 1499.99
-}
-```
-
----
-
-### **🚚 Proveedores**
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/api/Proveedor` | Obtener todos los proveedores |
-| `GET` | `/api/Proveedor/{id}` | Obtener proveedor por ID |
-| `POST` | `/api/Proveedor` | Crear nuevo proveedor |
-| `PUT` | `/api/Proveedor/{id}` | Actualizar proveedor |
-| `DELETE` | `/api/Proveedor/{id}` | Eliminar proveedor |
-
-**Ejemplo - Crear Proveedor:**
-```http
-POST /api/Proveedor
-Content-Type: application/json
-
-{
-  "nombre": "Tech Suppliers Inc.",
-  "email": "ventas@techsuppliers.com",
-  "telefono": "+34 912 345 678"
-}
-```
-
----
-
-### **📊 Movimientos de Stock**
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/api/MovimientosStock` | Obtener todos los movimientos |
-| `GET` | `/api/MovimientosStock/{id}` | Obtener movimiento por ID |
-| `POST` | `/api/MovimientosStock` | Registrar nuevo movimiento |
-
-**Ejemplo - Entrada de Stock:**
-```http
-POST /api/MovimientosStock
+### **Registrar movimiento de stock**
+```bash
+POST /api/movimientos-stock
 Content-Type: application/json
 
 {
   "productoId": 1,
-  "proveedorId": 1,
-  "tipo": 1,
-  "cantidad": 50,
-  "razon": "Compra mensual"
+  "tipo": "Salida",  // Entrada | Salida | AjustePositivo | AjusteNegativo
+  "cantidad": 45,
+  "razon": "Venta cliente corporativo"
 }
 ```
 
-**Tipos de Movimiento:**
-- `1` - Entrada (requiere ProveedorId)
-- `2` - Salida
-- `3` - Ajuste Positivo
-- `4` - Ajuste Negativo
-
-**Respuesta:**
-```json
-{
-  "id": 1,
-  "productoId": 1,
-  "productoNombre": "Laptop Dell XPS 15",
-  "proveedorId": 1,
-  "proveedorNombre": "Tech Suppliers Inc.",
-  "tipo": 1,
-  "cantidad": 50,
-  "razon": "Compra mensual",
-  "fecha": "2024-11-18T00:15:30"
-}
+**Si el stock queda por debajo del mínimo:**
+```
+🔔 Evento disparado: StockBajoEvent
+Producto: Laptop HP (SKU: PROD-00001)
+Stock actual: 5 | Stock mínimo: 10
 ```
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📂 **Estructura del proyecto**
 
 ```
 InventoryAPI-CQRS/
 ├── src/
 │   └── InventoryAPI/
-│       ├── Controllers/           # Controladores API
-│       ├── Features/             # CQRS - Commands y Queries
+│       ├── Controllers/           # Endpoints REST
+│       ├── Features/              # CQRS - Commands y Queries
 │       │   ├── Productos/
 │       │   ├── Categorias/
 │       │   ├── Proveedores/
 │       │   └── MovimientosStock/
-│       ├── DTOs/                 # Data Transfer Objects
-│       ├── Models/               # Entidades de dominio
-│       ├── Repositories/         # Repository Pattern
-│       ├── Events/               # Event Publisher
-│       ├── Data/                 # DbContext
-│       ├── Migrations/           # EF Core Migrations
-│       └── Program.cs
-├── tests/
-│   └── InventoryAPI.IntegrationTests/
-│       ├── Infrastructure/       # TestBase con Testcontainers
-│       └── Tests/               # Tests por entidad
-├── Dockerfile                    # Multi-stage build
-├── docker-compose.yml           # Orquestación
-├── .dockerignore
-└── README.md
+│       ├── Validation/            # FluentValidation + Behavior
+│       ├── Models/                # Entidades de dominio
+│       ├── DTOs/                  # Data Transfer Objects
+│       ├── Repositories/          # Acceso a datos
+│       ├── UnitOfWork/            # Patrón Unit of Work
+│       ├── Events/                # Domain Events + Publisher
+│       └── Data/                  # DbContext + Migrations
+│
+└── tests/
+    └── InventoryAPI.IntegrationTests/  # Tests con Testcontainers
 ```
 
 ---
 
-## 🔒 Decisiones de Diseño
+## 🎓 **Conceptos demostrados**
 
-### **1. CQRS sin Service Layer**
+Este proyecto es un showcase de:
 
-Se eliminó la capa de servicios tradicional en favor de **Handlers dedicados** para cada comando/query. Esto proporciona:
-- Mayor cohesión
-- Código más testeable
-- Separación clara de responsabilidades
+### **Principios SOLID**
+- **S** - Handlers con responsabilidad única
+- **O** - Extensible vía interfaces (IEventPublisher, IRepository)
+- **L** - Repositories intercambiables respetando contratos
+- **I** - Interfaces segregadas (IProductoRepository vs IGenericRepository)
+- **D** - Dependencias de abstracciones, no implementaciones
 
-### **2. Repository Pattern con EF Core**
+### **Patrones de diseño**
+- **CQRS** - Separación lectura/escritura
+- **Mediator** - MediatR desacopla controllers de handlers
+- **Repository** - Abstrae acceso a datos
+- **Unit of Work** - Coordina transacciones
+- **Domain Events** - Notificaciones asíncronas
 
-Aunque EF Core ya implementa Unit of Work y Repository, se mantienen repositorios explícitos para:
-- Facilitar testing con mocks
-- Abstracción adicional sobre EF Core
-- Posible cambio de ORM en el futuro
+### **Testing avanzado**
+- Integration tests con infraestructura real
+- Testcontainers para reproducibilidad
+- Arrange-Act-Assert pattern
 
-### **3. DTOs Separados**
-
-- **Request DTOs**: Validación de entrada
-- **Response DTOs**: Control de datos expuestos
-- **Beneficio**: Desacoplamiento entre modelo de dominio y API
-
-### **4. Event Publisher Abstracto**
-
-```csharp
-public interface IEventPublisher
-{
-    void Publish<T>(T evento) where T : class;
-}
-```
-
-Diseño **plug & play** que permite cambiar la implementación sin modificar handlers:
-- Actual: `ConsoleEventPublisher` (desarrollo)
-- Futuro: Azure Service Bus, RabbitMQ, etc.
-
-### **5. MovimientosStock Inmutables**
-
-Los movimientos NO tienen operaciones de Update/Delete para mantener:
-- ✅ Integridad del historial
-- ✅ Auditoría completa
-- ✅ Trazabilidad de cambios
+### **Cloud-ready**
+- Dockerizado y listo para Azure
+- Configuración separada por ambiente
+- Preparado para CI/CD
 
 ---
 
-## 🎯 Validaciones Implementadas
+## 📬 **Contacto**
 
-### **Productos**
-- ✅ Precio no puede ser negativo
-- ✅ Stock actual no puede ser negativo
-- ✅ Stock mínimo no puede ser negativo
-- ✅ Categoría debe existir
-- ✅ SKU se genera automáticamente
+**Adrián** - Desarrollador Full-Stack .NET
 
-### **MovimientosStock**
-- ✅ Cantidad debe ser > 0
-- ✅ Producto debe existir
-- ✅ Entradas requieren ProveedorId obligatorio
-- ✅ Salidas verifican stock suficiente
-- ✅ Proveedor debe existir (si se proporciona)
-
-### **Proveedores**
-- ✅ No se puede eliminar si tiene movimientos asociados
+[![GitHub](https://img.shields.io/badge/GitHub-Kvr0th3c4t-181717?logo=github)](https://github.com/Kvr0th3c4t)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Conectar-0A66C2?logo=linkedin)](https://www.linkedin.com/in/adrian-carmonamad/)
 
 ---
 
-## 📈 Roadmap
+## 📄 **Licencia**
 
-### **Fase Actual - Completado ✅**
-- [x] Implementación CQRS con MediatR
-- [x] Repository Pattern
-- [x] Integration Tests (25 tests)
-- [x] Dockerización completa
-- [x] Event Publisher
-
-### **Próximas Mejoras**
-
-#### **v2.0 - Vertical Slice Architecture**
-- [ ] Migración a Wolverine (sucesor de MediatR)
-- [ ] Organización por features verticales
-- [ ] Minimal APIs
-
-#### **v2.1 - Seguridad**
-- [ ] Autenticación JWT
-- [ ] Autorización basada en roles
-- [ ] Rate limiting
-
-#### **v2.2 - Observabilidad**
-- [ ] Logging estructurado (Serilog)
-- [ ] Health checks
-- [ ] Métricas con Prometheus
-
-#### **v2.3 - Cache**
-- [ ] Redis para cache distribuido
-- [ ] Cache de queries frecuentes
+Este proyecto está bajo la licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
 
 ---
 
-## 🤝 Contribuciones
-
-Este es un proyecto educativo personal, pero sugerencias y feedback son bienvenidos.
-
----
-
-## 👨‍💻 Autor
-
-**Adrián** - [GitHub](https://github.com/Kvr0th3c4t)
-
-Desarrollador Full-Stack con experiencia en:
-- ASP.NET Core & Angular
-- CQRS & Clean Architecture
-- Docker & Azure
-- Testing & TDD
-
----
-
-## 📄 Licencia
-
-Este proyecto es de código abierto y está disponible bajo la licencia MIT.
-
----
-
-## 🙏 Agradecimientos
-
-Este proyecto fue desarrollado como parte de mi aprendizaje continuo en arquitecturas modernas de backend y mejores prácticas en .NET.
-
----
-
-**⭐ Si este proyecto te resultó útil, considera darle una estrella en GitHub!**
+<div align="center">
+  <p><strong>⭐ Si este proyecto te resulta útil, considera darle una estrella</strong></p>
+  <p><em>Desarrollado como portfolio de buenas prácticas en ASP.NET Core</em></p>
+</div>
