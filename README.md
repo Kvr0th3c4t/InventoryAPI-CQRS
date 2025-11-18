@@ -1,8 +1,7 @@
 # 📦 InventoryAPI-CQRS
 
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![C#](https://img.shields.io/badge/C%23-12.0-239120?logo=c-sharp)](https://docs.microsoft.com/en-us/dotnet/csharp/)
-[![SQL Server](https://img.shields.io/badge/SQL%20Server-2022-CC2927?logo=microsoft-sql-server)](https://www.microsoft.com/sql-server)
+[![SQL Server](https://img.shields.io/badge/SQL%20Server-2022-CC2927?logo=microsoftsqlserver)](https://www.microsoft.com/sql-server)
 [![Tests](https://img.shields.io/badge/tests-25%20passing-success)](tests/)
 [![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker)](docker-compose.yml)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -28,44 +27,45 @@ Este es mi primer proyecto **end-to-end** con ASP.NET Core donde implemento las 
 ```mermaid
 graph TB
     subgraph "API Layer"
-        A[Controllers] --> B[MediatR]
+        A[Controllers] -->|1. Envía Command/Query| B[MediatR]
     end
     
     subgraph "Application Layer - CQRS"
-        B --> C[Commands]
-        B --> D[Queries]
-        C --> E[Command Handlers]
-        D --> F[Query Handlers]
-        B --> G[ValidationBehavior]
-        G --> E
-        G --> F
-    end
-    
-    subgraph "Domain Layer"
-        E --> H[Domain Events]
-        H --> I[IEventPublisher]
-        I -.-> J[ConsoleEventPublisher]
-        I -.-> K[FuturePublisher - Azure Service Bus]
+        B -->|2. Intercepta| G[ValidationBehavior]
+        G -->|3. Si válido| C{Tipo?}
+        C -->|Command| E[Command Handlers]
+        C -->|Query| F[Query Handlers]
     end
     
     subgraph "Infrastructure Layer"
-        E --> L[UnitOfWork]
-        F --> L
-        L --> M[Repositories]
-        M --> N[(SQL Server)]
+        E -->|4a. Lee/Escribe| M[Repositories]
+        F -->|4a. Lee| M
+        M -->|Accede| N[(SQL Server)]
+        
+        E -->|4b. Guarda cambios| L[UnitOfWork]
+        F -->|4b. Guarda cambios| L
+        L -->|Commit transacción| N
+    end
+    
+    subgraph "Domain Layer - Events"
+        E -->|5. Dispara evento| H[Domain Events]
+        H -->|Usa| I[IEventPublisher]
+        I -.->|Dev| J[ConsoleEventPublisher]
+        I -.->|Prod futuro| K[Azure Service Bus]
     end
     
     style I fill:#FFD700,stroke:#FF8C00,stroke-width:3px
     style G fill:#90EE90,stroke:#228B22,stroke-width:2px
     style B fill:#87CEEB,stroke:#4682B4,stroke-width:2px
+    style L fill:#FFB6C1,stroke:#DC143C,stroke-width:2px
 ```
 
-**Flujo típico:**
-1. **Request** → Controller recibe DTO
-2. **Validación** → FluentValidation en pipeline de MediatR
-3. **Procesamiento** → Handler ejecuta lógica (Command/Query)
-4. **Eventos** → Se disparan eventos de dominio (ej: stock bajo)
-5. **Persistencia** → UnitOfWork coordina transacciones
+**Flujo típico de una operación:**
+1. **Request** → Controller recibe DTO y crea Command/Query
+2. **Validación** → MediatR pasa por ValidationBehavior con FluentValidation
+3. **Procesamiento** → Handler ejecuta lógica de negocio
+4. **Persistencia** → Repositories acceden a datos + UnitOfWork coordina transacciones
+5. **Eventos** → Se disparan eventos de dominio (ej: stock bajo) de forma opcional
 
 ---
 
@@ -94,9 +94,14 @@ public class AzureServiceBusEventPublisher : IEventPublisher { ... }
 // Desarrollo
 builder.Services.AddScoped<IEventPublisher, ConsoleEventPublisher>();
 
-// Producción (futuro)
+// Producción (futuro) - solo cambiar esta línea
 // builder.Services.AddScoped<IEventPublisher, AzureServiceBusEventPublisher>();
 ```
+
+**¿Por qué es importante?**
+- ✅ **Zero coupling**: Handlers no saben cómo se publican eventos
+- ✅ **Intercambiable**: Cambio de implementación sin tocar lógica de negocio
+- ✅ **Cloud-ready**: Preparado para Azure Service Bus, Event Grid, etc.
 
 ---
 
