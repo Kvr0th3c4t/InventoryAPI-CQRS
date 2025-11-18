@@ -2,12 +2,14 @@ using InventoryAPI.Data;
 using InventoryAPI.Repositories;
 using InventoryAPI.Events;
 using Microsoft.EntityFrameworkCore;
+using InventoryAPI.UnitOfWork;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IEventPublisher, ConsoleEventPublisher>();

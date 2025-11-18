@@ -32,10 +32,8 @@ public class IntegrationTestsBase : IAsyncLifetime
                         services.Remove(descriptor);
                     }
 
-                    // NO llamar a GetConnectionString aquí
                     services.AddDbContext<ApplicationDbContext>(options =>
                     {
-                        // Usar una lambda lazy
                         options.UseSqlServer(_msSqlContainer.GetConnectionString());
                     });
                 });
@@ -53,7 +51,7 @@ public class IntegrationTestsBase : IAsyncLifetime
         await db.Database.MigrateAsync();
     }
 
-    public async Task DisposeAsync()  // ← Volver a Task
+    public async Task DisposeAsync()
     {
         await _msSqlContainer.DisposeAsync();
         Client.Dispose();
