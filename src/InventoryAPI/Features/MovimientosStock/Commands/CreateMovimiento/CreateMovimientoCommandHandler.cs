@@ -2,6 +2,7 @@ using InventoryAPI.Dtos.MovimientoStockDtos;
 using InventoryAPI.Events;
 using InventoryAPI.Models;
 using InventoryAPI.Repositories;
+using InventoryAPI.UnitOfWork;
 using MediatR;
 
 namespace InventoryAPI.Features.MovimientosStock.Commands.CreateMovimiento;
@@ -12,17 +13,20 @@ public class CreateMovimientoStockCommandHandler : IRequestHandler<CreateMovimie
     private readonly IProductoRepository _productoRepository;
     private readonly IProveedorRepository _proveedorRepository;
     private readonly IEventPublisher _eventPublisher;
+    private readonly IUnitOfWork _unitOfWork;
 
     public CreateMovimientoStockCommandHandler(
         IMovimientoStockRepository movimientosRepository,
         IProductoRepository productoRepository,
         IProveedorRepository proveedorRepository,
-        IEventPublisher eventPublisher)
+        IEventPublisher eventPublisher,
+        IUnitOfWork unitOfWork)
     {
         _movimientosRepository = movimientosRepository;
         _productoRepository = productoRepository;
         _proveedorRepository = proveedorRepository;
         _eventPublisher = eventPublisher;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<MovimientoStockResponseDto> Handle(CreateMovimientoStockCommand request, CancellationToken cancellationToken)
@@ -80,7 +84,6 @@ public class CreateMovimientoStockCommandHandler : IRequestHandler<CreateMovimie
                 ProductoNombre = productoExiste.Nombre,
                 StockActual = productoExiste.StockActual,
                 StockMinimo = productoExiste.StockMinimo,
-                FechaEvento = DateTimeOffset.UtcNow
             };
             _eventPublisher.Publish(evento);
         }
@@ -93,10 +96,11 @@ public class CreateMovimientoStockCommandHandler : IRequestHandler<CreateMovimie
             Tipo = request.Tipo,
             Cantidad = request.Cantidad,
             Razon = request.Razon,
-            FechaMovimiento = DateTimeOffset.UtcNow
         };
 
         var movimientoCreado = await _movimientosRepository.Add(movimiento);
+
+        await _unitOfWork.SaveChangesAsync();
 
         // 8. Devolver DTO con nombres de producto y proveedor
         var producto = await _productoRepository.GetById(movimientoCreado.ProductoId);

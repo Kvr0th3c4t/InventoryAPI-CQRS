@@ -1,4 +1,5 @@
 using InventoryAPI.Repositories;
+using InventoryAPI.UnitOfWork;
 using MediatR;
 
 namespace InventoryAPI.Features.Proveedores.Commands.DeleteProveedor;
@@ -7,11 +8,13 @@ public class DeleteProveedorCommandHandler : IRequestHandler<DeleteProveedorComm
 {
     private readonly IProveedorRepository _proveedorRepository;
     private readonly IMovimientoStockRepository _movimientoStockRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public DeleteProveedorCommandHandler(IProveedorRepository proveedorRepository, IMovimientoStockRepository movimientoStockRepository)
+    public DeleteProveedorCommandHandler(IProveedorRepository proveedorRepository, IMovimientoStockRepository movimientoStockRepository, IUnitOfWork unitOfWork)
     {
         _proveedorRepository = proveedorRepository;
         _movimientoStockRepository = movimientoStockRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<bool> Handle(DeleteProveedorCommand request, CancellationToken cancellationToken)
@@ -28,6 +31,9 @@ public class DeleteProveedorCommandHandler : IRequestHandler<DeleteProveedorComm
         if (tieneMovimientos)
             throw new InvalidOperationException("No se puede eliminar el proveedor porque tiene movimientos de stock asociados");
 
-        return await _proveedorRepository.Delete(request.Id);
+        await _proveedorRepository.Delete(request.Id);
+        await _unitOfWork.SaveChangesAsync();
+
+        return true;
     }
 }

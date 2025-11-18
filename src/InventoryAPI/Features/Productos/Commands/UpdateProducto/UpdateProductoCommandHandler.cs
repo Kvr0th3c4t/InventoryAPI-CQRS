@@ -1,5 +1,6 @@
 using InventoryAPI.Dtos.ProductoDtos;
 using InventoryAPI.Repositories;
+using InventoryAPI.UnitOfWork;
 using MediatR;
 
 namespace InventoryAPI.Features.Productos.Commands.UpdateProducto;
@@ -8,11 +9,13 @@ public class UpdateProductoCommandHandler : IRequestHandler<UpdateProductoComman
 {
     private readonly IProductoRepository _productoRepository;
     private readonly ICategoriaRepository _categoriaRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateProductoCommandHandler(IProductoRepository productoRepository, ICategoriaRepository categoriaRepository)
+    public UpdateProductoCommandHandler(IProductoRepository productoRepository, ICategoriaRepository categoriaRepository, IUnitOfWork unitOfWork)
     {
         _productoRepository = productoRepository;
         _categoriaRepository = categoriaRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ProductoResponseDto> Handle(UpdateProductoCommand request, CancellationToken cancellationToken)
@@ -58,6 +61,8 @@ public class UpdateProductoCommandHandler : IRequestHandler<UpdateProductoComman
             producto.Precio = request.Precio.Value;
 
         var productoActualizado = await _productoRepository.Update(producto);
+
+        await _unitOfWork.SaveChangesAsync();
 
         // Obtener categoría para la respuesta
         var categoria = await _categoriaRepository.GetById(productoActualizado!.CategoriaId);

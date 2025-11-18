@@ -1,5 +1,6 @@
 using InventoryAPI.Dtos.ProveedorDtos;
 using InventoryAPI.Repositories;
+using InventoryAPI.UnitOfWork;
 using MediatR;
 
 namespace InventoryAPI.Features.Proveedores.Commands.UpdateProveedor;
@@ -7,10 +8,12 @@ namespace InventoryAPI.Features.Proveedores.Commands.UpdateProveedor;
 public class UpdateProveedorCommandHandler : IRequestHandler<UpdateProveedorCommand, ProveedorResponseDto>
 {
     private readonly IProveedorRepository _proveedorRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateProveedorCommandHandler(IProveedorRepository proveedorRepository)
+    public UpdateProveedorCommandHandler(IProveedorRepository proveedorRepository, IUnitOfWork unitOfWork)
     {
         _proveedorRepository = proveedorRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ProveedorResponseDto> Handle(UpdateProveedorCommand request, CancellationToken cancellationToken)
@@ -31,6 +34,7 @@ public class UpdateProveedorCommandHandler : IRequestHandler<UpdateProveedorComm
             proveedor.Telefono = request.Telefono;
 
         var proveedorActualizado = await _proveedorRepository.Update(proveedor);
+        await _unitOfWork.SaveChangesAsync();
 
         var response = new ProveedorResponseDto
         {

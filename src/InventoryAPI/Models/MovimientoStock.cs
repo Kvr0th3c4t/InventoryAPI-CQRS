@@ -11,6 +11,6 @@ public class MovimientoStock
     public Proveedor? Proveedor { get; set; }
     public TipoMovimiento Tipo { get; set; }
     public int Cantidad { get; set; }
-    public DateTime FechaMovimiento { get; set; }
+    public DateTimeOffset FechaMovimiento { get; set; }
     public string? Razon { get; set; }
 }

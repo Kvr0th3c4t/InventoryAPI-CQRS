@@ -1,4 +1,5 @@
 using InventoryAPI.Repositories;
+using InventoryAPI.UnitOfWork;
 using MediatR;
 
 namespace InventoryAPI.Features.Categorias.Commands.DeleteCategoria;
@@ -6,10 +7,12 @@ namespace InventoryAPI.Features.Categorias.Commands.DeleteCategoria;
 public class DeleteCategoriaCommandHandler : IRequestHandler<DeleteCategoriaCommand, bool>
 {
     private readonly ICategoriaRepository _categoriaRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public DeleteCategoriaCommandHandler(ICategoriaRepository categoriaRepository)
+    public DeleteCategoriaCommandHandler(ICategoriaRepository categoriaRepository, IUnitOfWork unitOfWork)
     {
         _categoriaRepository = categoriaRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<bool> Handle(DeleteCategoriaCommand request, CancellationToken cancellationToken)
@@ -19,6 +22,9 @@ public class DeleteCategoriaCommandHandler : IRequestHandler<DeleteCategoriaComm
         if (categoria == null)
             throw new KeyNotFoundException($"Categoría con ID {request.Id} no encontrada");
 
-        return await _categoriaRepository.Delete(request.Id);
+        await _categoriaRepository.Delete(request.Id);
+        await _unitOfWork.SaveChangesAsync();
+
+        return true;
     }
 }

@@ -1,6 +1,8 @@
+using System.Numerics;
 using InventoryAPI.Dtos.ProductoDtos;
 using InventoryAPI.Models;
 using InventoryAPI.Repositories;
+using InventoryAPI.UnitOfWork;
 using MediatR;
 
 namespace InventoryAPI.Features.Productos.Commands.CreateProducto;
@@ -9,11 +11,13 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
 {
     private readonly IProductoRepository _productoRepository;
     private readonly ICategoriaRepository _categoriaRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CreateProductoCommandHandler(IProductoRepository productoRepository, ICategoriaRepository categoriaRepository)
+    public CreateProductoCommandHandler(IProductoRepository productoRepository, ICategoriaRepository categoriaRepository, IUnitOfWork unitOfWork)
     {
         _productoRepository = productoRepository;
         _categoriaRepository = categoriaRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ProductoResponseDto> Handle(CreateProductoCommand request, CancellationToken cancellationToken)
@@ -49,6 +53,8 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
         };
 
         var productoCreado = await _productoRepository.Add(producto);
+
+        await _unitOfWork.SaveChangesAsync();
 
         // Construir respuesta
         var response = new ProductoResponseDto

@@ -1,5 +1,6 @@
 using InventoryAPI.Dtos.CategoriaDtos;
 using InventoryAPI.Repositories;
+using InventoryAPI.UnitOfWork;
 using MediatR;
 
 namespace InventoryAPI.Features.Categorias.Commands.UpdateCategoria;
@@ -7,10 +8,12 @@ namespace InventoryAPI.Features.Categorias.Commands.UpdateCategoria;
 public class UpdateCategoriaCommandHandler : IRequestHandler<UpdateCategoriaCommand, CategoriaResponseDto>
 {
     private readonly ICategoriaRepository _categoriaRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateCategoriaCommandHandler(ICategoriaRepository categoriaRepository)
+    public UpdateCategoriaCommandHandler(ICategoriaRepository categoriaRepository, IUnitOfWork unitOfWork)
     {
         _categoriaRepository = categoriaRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<CategoriaResponseDto> Handle(UpdateCategoriaCommand request, CancellationToken cancellationToken)
@@ -28,6 +31,7 @@ public class UpdateCategoriaCommandHandler : IRequestHandler<UpdateCategoriaComm
             categoria.Descripcion = request.Descripcion;
 
         var categoriaActualizada = await _categoriaRepository.Update(categoria);
+        await _unitOfWork.SaveChangesAsync();
 
         var response = new CategoriaResponseDto
         {

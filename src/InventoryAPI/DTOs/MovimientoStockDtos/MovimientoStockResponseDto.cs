@@ -12,5 +12,5 @@ public class MovimientoStockResponseDto
     public TipoMovimiento Tipo { get; set; }
     public int Cantidad { get; set; }
     public string? Razon { get; set; }
-    public DateTime Fecha { get; set; }
+    public DateTimeOffset Fecha { get; set; }
 }

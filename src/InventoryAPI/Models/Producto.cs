@@ -9,7 +9,7 @@ public class Producto
     public int StockActual { get; set; }
     public int StockMinimo { get; set; }
     public decimal Precio { get; set; }
-    public DateTime FechaCreacion { get; set; }
+    public DateTimeOffset FechaCreacion { get; set; }
     public int CategoriaId { get; set; }
     public Categoria? Categoria { get; set; }
     public int? ProveedorId { get; set; }
