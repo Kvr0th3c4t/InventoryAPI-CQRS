@@ -110,14 +110,6 @@ builder.Services.AddScoped<IEventPublisher, ConsoleEventPublisher>();
 **Commands** modifican estado, **Queries** solo leen. Sin mezclas.
 
 ```csharp
-// ❌ ANTES: Todo mezclado en un servicio
-public class ProductoService {
-    public Producto GetById(int id) { }
-    public void Create(Producto p) { }
-    public void Update(Producto p) { }
-}
-
-// ✅ AHORA: Separación clara
 Features/
 ├── Productos/
     ├── Commands/CreateProducto/     ← Escribe
