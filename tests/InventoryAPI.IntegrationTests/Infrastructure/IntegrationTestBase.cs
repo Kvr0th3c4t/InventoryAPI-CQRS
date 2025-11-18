@@ -19,6 +19,8 @@ public class IntegrationTestsBase : IAsyncLifetime
             .WithPassword("Test@12345")
             .Build();
 
+        _msSqlContainer.StartAsync().GetAwaiter().GetResult();
+
         Factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
