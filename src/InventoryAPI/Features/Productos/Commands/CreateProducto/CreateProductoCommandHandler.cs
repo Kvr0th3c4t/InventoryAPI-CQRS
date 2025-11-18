@@ -45,7 +45,7 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
             StockActual = request.StockActual,
             StockMinimo = request.StockMinimo,
             Precio = request.Precio,
-            FechaCreacion = DateTime.Now
+            FechaCreacion = DateTimeOffset.UtcNow
         };
 
         var productoCreado = await _productoRepository.Add(producto);

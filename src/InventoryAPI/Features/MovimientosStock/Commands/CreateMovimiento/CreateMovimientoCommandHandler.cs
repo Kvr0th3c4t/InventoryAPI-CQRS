@@ -80,7 +80,7 @@ public class CreateMovimientoStockCommandHandler : IRequestHandler<CreateMovimie
                 ProductoNombre = productoExiste.Nombre,
                 StockActual = productoExiste.StockActual,
                 StockMinimo = productoExiste.StockMinimo,
-                FechaEvento = DateTime.Now
+                FechaEvento = DateTimeOffset.UtcNow
             };
             _eventPublisher.Publish(evento);
         }
@@ -93,7 +93,7 @@ public class CreateMovimientoStockCommandHandler : IRequestHandler<CreateMovimie
             Tipo = request.Tipo,
             Cantidad = request.Cantidad,
             Razon = request.Razon,
-            FechaMovimiento = DateTime.Now
+            FechaMovimiento = DateTimeOffset.UtcNow
         };
 
         var movimientoCreado = await _movimientosRepository.Add(movimiento);
