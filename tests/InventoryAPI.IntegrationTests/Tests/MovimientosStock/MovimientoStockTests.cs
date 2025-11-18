@@ -28,7 +28,7 @@ public class MovimientoStockTests : IntegrationTestsBase
         var proveedorDto = new CreateProveedorDto
         {
             Nombre = "Proveedor 1",
-            Email = "emailfalso",
+            Email = "proveedor1@example.com",
             Telefono = "134134"
         };
 
@@ -218,7 +218,7 @@ public class MovimientoStockTests : IntegrationTestsBase
         var proveedorDto = new CreateProveedorDto
         {
             Nombre = "Proveedor 1",
-            Email = "emailfalso",
+            Email = "proveedor1@example.com",
             Telefono = "134134"
         };
 
@@ -330,7 +330,7 @@ public class MovimientoStockTests : IntegrationTestsBase
         {
             Nombre = "Mouse",
             CategoriaId = categoriaId,
-            StockActual = 10,  
+            StockActual = 10,
             StockMinimo = 5,
             Precio = 19.99m
         };
@@ -344,7 +344,7 @@ public class MovimientoStockTests : IntegrationTestsBase
             ProductoId = productoId,
             ProveedorId = null,
             Tipo = Enums.TipoMovimiento.Salida,
-            Cantidad = 50,  
+            Cantidad = 50,
             Razon = "Intento de salida con stock insuficiente"
         };
 
@@ -384,7 +384,7 @@ public class MovimientoStockTests : IntegrationTestsBase
         {
             Nombre = "Teclado",
             CategoriaId = categoriaId,
-            StockActual = 50,  
+            StockActual = 50,
             StockMinimo = 10,
             Precio = 79.99m
         };
@@ -398,7 +398,7 @@ public class MovimientoStockTests : IntegrationTestsBase
             ProductoId = productoId,
             ProveedorId = proveedorId,
             Tipo = Enums.TipoMovimiento.Entrada,
-            Cantidad = 30,  
+            Cantidad = 30,
             Razon = "Reposición de stock"
         };
 
@@ -411,6 +411,6 @@ public class MovimientoStockTests : IntegrationTestsBase
         var productoActualizadoResponse = await Client.GetAsync($"/api/Productos/{productoId}");
         var productoActualizado = await productoActualizadoResponse.Content.ReadFromJsonAsync<ProductoResponseDto>();
 
-        productoActualizado!.StockActual.Should().Be(80);  
+        productoActualizado!.StockActual.Should().Be(80);
     }
 }

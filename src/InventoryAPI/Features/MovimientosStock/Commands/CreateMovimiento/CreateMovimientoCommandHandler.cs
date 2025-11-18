@@ -31,27 +31,18 @@ public class CreateMovimientoStockCommandHandler : IRequestHandler<CreateMovimie
 
     public async Task<MovimientoStockResponseDto> Handle(CreateMovimientoStockCommand request, CancellationToken cancellationToken)
     {
-        // 1. Validar producto existe
+
         var productoExiste = await _productoRepository.GetById(request.ProductoId);
         if (productoExiste == null)
             throw new InvalidOperationException("No existe el producto");
 
-        // 2. Si es Entrada → Validar ProveedorId obligatorio
-        if (request.Tipo == Enums.TipoMovimiento.Entrada)
+        if (request.ProveedorId.HasValue)
         {
-            if (!request.ProveedorId.HasValue)
-                throw new ArgumentException("Para movimientos de entrada es obligatorio el ProveedorId");
-
             var proveedorExiste = await _proveedorRepository.GetById(request.ProveedorId.Value);
             if (proveedorExiste == null)
                 throw new InvalidOperationException("El proveedor no existe");
         }
 
-        // 3. Validar cantidad > 0
-        if (request.Cantidad <= 0)
-            throw new ArgumentException("La cantidad debe ser mayor a 0");
-
-        // 4. Si es Salida/AjusteNegativo → Validar stock suficiente
         if (request.Tipo == Enums.TipoMovimiento.Salida || request.Tipo == Enums.TipoMovimiento.AjusteNegativo)
         {
             if (productoExiste.StockActual < request.Cantidad)
@@ -59,7 +50,6 @@ public class CreateMovimientoStockCommandHandler : IRequestHandler<CreateMovimie
                     $"Stock insuficiente. Stock actual: {productoExiste.StockActual}, cantidad solicitada: {request.Cantidad}");
         }
 
-        // 5. Actualizar stock según tipo de movimiento
         switch (request.Tipo)
         {
             case Enums.TipoMovimiento.Entrada:
@@ -75,7 +65,6 @@ public class CreateMovimientoStockCommandHandler : IRequestHandler<CreateMovimie
 
         await _productoRepository.Update(productoExiste);
 
-        // 6. Disparar StockBajoEvent si corresponde
         if (productoExiste.StockActual < productoExiste.StockMinimo)
         {
             var evento = new StockBajoEvent
@@ -88,7 +77,6 @@ public class CreateMovimientoStockCommandHandler : IRequestHandler<CreateMovimie
             _eventPublisher.Publish(evento);
         }
 
-        // 7. Crear el movimiento
         var movimiento = new MovimientoStock
         {
             ProductoId = request.ProductoId,
@@ -102,7 +90,6 @@ public class CreateMovimientoStockCommandHandler : IRequestHandler<CreateMovimie
 
         await _unitOfWork.SaveChangesAsync();
 
-        // 8. Devolver DTO con nombres de producto y proveedor
         var producto = await _productoRepository.GetById(movimientoCreado.ProductoId);
         var proveedor = movimientoCreado.ProveedorId.HasValue
             ? await _proveedorRepository.GetById(movimientoCreado.ProveedorId.Value)

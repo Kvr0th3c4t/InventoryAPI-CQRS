@@ -4,6 +4,7 @@ using MediatR;
 using InventoryAPI.Features.MovimientosStock.Queries.GetAllMovimientos;
 using InventoryAPI.Features.MovimientosStock.Queries.GetMovimientoById;
 using InventoryAPI.Features.MovimientosStock.Commands.CreateMovimiento;
+using FluentValidation;
 
 namespace InventoryAPI.Controllers;
 
@@ -60,6 +61,17 @@ public class MovimientosStockController : ControllerBase
             var result = await _mediator.Send(command);
 
             return CreatedAtAction(nameof(GetMovimientoById), new { id = result.Id }, result);
+        }
+        catch (ValidationException ex)
+        {
+            var errors = ex.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.ErrorMessage).ToArray()
+                );
+
+            return BadRequest(new { errors });
         }
         catch (KeyNotFoundException)
         {

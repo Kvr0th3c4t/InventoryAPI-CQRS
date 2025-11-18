@@ -25,17 +25,6 @@ public class UpdateProductoCommandHandler : IRequestHandler<UpdateProductoComman
         if (producto == null)
             throw new KeyNotFoundException($"Producto con ID {request.Id} no encontrado");
 
-        // Validaciones
-        if (request.Precio.HasValue && request.Precio < 0)
-            throw new ArgumentException("El precio no puede ser negativo");
-
-        if (request.StockActual.HasValue && request.StockActual < 0)
-            throw new ArgumentException("El stock actual no puede ser negativo");
-
-        if (request.StockMinimo.HasValue && request.StockMinimo < 0)
-            throw new ArgumentException("El stock mínimo no puede ser negativo");
-
-        // Actualización parcial
         if (request.Nombre != null)
             producto.Nombre = request.Nombre;
 
@@ -64,7 +53,6 @@ public class UpdateProductoCommandHandler : IRequestHandler<UpdateProductoComman
 
         await _unitOfWork.SaveChangesAsync();
 
-        // Obtener categoría para la respuesta
         var categoria = await _categoriaRepository.GetById(productoActualizado!.CategoriaId);
 
         var response = new ProductoResponseDto

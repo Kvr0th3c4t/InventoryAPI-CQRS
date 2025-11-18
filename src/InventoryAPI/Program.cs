@@ -3,6 +3,9 @@ using InventoryAPI.Repositories;
 using InventoryAPI.Events;
 using Microsoft.EntityFrameworkCore;
 using InventoryAPI.UnitOfWork;
+using FluentValidation;
+using MediatR;
+using InventoryAPI.Validation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,11 +18,16 @@ builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IEventPublisher, ConsoleEventPublisher>();
 builder.Services.AddScoped<IProveedorRepository, ProveedorRepository>();
 builder.Services.AddScoped<IMovimientoStockRepository, MovimientoStockRepository>();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+{
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+});
 
 var app = builder.Build();
 

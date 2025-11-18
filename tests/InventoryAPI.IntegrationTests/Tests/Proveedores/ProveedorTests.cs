@@ -19,7 +19,7 @@ public class ProveedorTests : IntegrationTestsBase
         var proveedorDto = new CreateProveedorDto
         {
             Nombre = "Proveedor 1",
-            Email = "emailfalso",
+            Email = "proveedor1@example.com",
             Telefono = "134134"
         };
 
@@ -47,14 +47,14 @@ public class ProveedorTests : IntegrationTestsBase
         await Client.PostAsJsonAsync("/api/Proveedor", new CreateProveedorDto
         {
             Nombre = "Proveedor 1",
-            Email = "emailfalso",
+            Email = "proveedor1@example.com",
             Telefono = "134134"
         });
 
         await Client.PostAsJsonAsync("/api/Proveedor", new CreateProveedorDto
         {
             Nombre = "Proveedor 2",
-            Email = "emailfalso2",
+            Email = "proveedor2@example.com",
             Telefono = "Telefono"
         });
 
@@ -76,7 +76,7 @@ public class ProveedorTests : IntegrationTestsBase
         var proveedorDto = new CreateProveedorDto
         {
             Nombre = "Proveedor 1",
-            Email = "emailfalso",
+            Email = "proveedor1@example.com",
             Telefono = "134134"
         };
 
@@ -106,7 +106,7 @@ public class ProveedorTests : IntegrationTestsBase
         var proveedorDto = new CreateProveedorDto
         {
             Nombre = "Proveedor 1",
-            Email = "emailfalso",
+            Email = "proveedor1@example.com",
             Telefono = "134134"
         };
 
@@ -117,7 +117,7 @@ public class ProveedorTests : IntegrationTestsBase
         var updateDto = new UpdateProveedorDto
         {
             Nombre = "Proveedor modificado",
-            Email = "Email modificado",
+            Email = "proveedor.modificado@example.com",
             Telefono = "Telefono mdificado"
         };
 
@@ -143,7 +143,7 @@ public class ProveedorTests : IntegrationTestsBase
         var proveedorDto = new CreateProveedorDto
         {
             Nombre = "Proveedor 1",
-            Email = "emailfalso",
+            Email = "proveedor1@example.com",
             Telefono = "134134"
         };
 
@@ -180,7 +180,7 @@ public class ProveedorTests : IntegrationTestsBase
         var proveedorDto = new CreateProveedorDto
         {
             Nombre = "Proveedor 1",
-            Email = "emailfalso",
+            Email = "proveedor1@example.com",
             Telefono = "134134"
         };
 

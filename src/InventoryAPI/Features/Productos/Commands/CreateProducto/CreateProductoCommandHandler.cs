@@ -1,4 +1,3 @@
-using System.Numerics;
 using InventoryAPI.Dtos.ProductoDtos;
 using InventoryAPI.Models;
 using InventoryAPI.Repositories;
@@ -22,15 +21,6 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
 
     public async Task<ProductoResponseDto> Handle(CreateProductoCommand request, CancellationToken cancellationToken)
     {
-        // Validaciones
-        if (request.Precio < 0)
-            throw new ArgumentException("El precio no puede ser negativo");
-
-        if (request.StockActual < 0)
-            throw new ArgumentException("El stock actual no puede ser negativo");
-
-        if (request.StockMinimo < 0)
-            throw new ArgumentException("El stock mínimo no puede ser negativo");
 
         var categoriaBuscada = await _categoriaRepository.GetById(request.CategoriaId);
         if (categoriaBuscada == null)
@@ -39,7 +29,6 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
         // Generar SKU
         string sku = "PROD-" + Guid.NewGuid().ToString("N")[..8].ToUpper();
 
-        // Crear producto
         var producto = new Producto
         {
             Nombre = request.Nombre,
@@ -56,7 +45,6 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
 
         await _unitOfWork.SaveChangesAsync();
 
-        // Construir respuesta
         var response = new ProductoResponseDto
         {
             Id = productoCreado.Id,
