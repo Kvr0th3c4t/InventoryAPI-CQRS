@@ -6,27 +6,27 @@ namespace InventoryAPI.Features.Categorias.Queries.GetCategoriaById;
 
 public class GetCategoriaByIdQueryHandler : IRequestHandler<GetCategoriaByIdQuery, CategoriaResponseDto>
 {
-    private readonly ICategoriaRepository _categoriarepository;
+    private readonly ICategoriaRepository _categoriaRepository;
 
     public GetCategoriaByIdQueryHandler(ICategoriaRepository categoriaRepository)
     {
-        _categoriarepository = categoriaRepository;
+        _categoriaRepository = categoriaRepository;
     }
 
-    public Task<CategoriaResponseDto> Handle(GetCategoriaByIdQuery request, CancellationToken cancellationToken)
+    public async Task<CategoriaResponseDto> Handle(GetCategoriaByIdQuery request, CancellationToken cancellationToken)
     {
+        var categoria = await _categoriaRepository.GetById(request.Id);
 
-        var categoria = _categoriarepository.GetById(request.Id);
         if (categoria == null)
-            throw new KeyNotFoundException("La categoría no existe");
+            throw new KeyNotFoundException($"Categoría con ID {request.Id} no encontrada");
 
         var response = new CategoriaResponseDto
         {
+            Id = categoria.Id,
             Nombre = categoria.Nombre,
-            Descripcion = categoria.Descripcion,
-            Id = categoria.Id
+            Descripcion = categoria.Descripcion
         };
 
-        return Task.FromResult(response);
+        return response;
     }
 }

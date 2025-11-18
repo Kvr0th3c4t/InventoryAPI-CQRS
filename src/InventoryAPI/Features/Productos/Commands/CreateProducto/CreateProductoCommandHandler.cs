@@ -12,12 +12,13 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
 
     public CreateProductoCommandHandler(IProductoRepository productoRepository, ICategoriaRepository categoriaRepository)
     {
-        _categoriaRepository = categoriaRepository;
         _productoRepository = productoRepository;
+        _categoriaRepository = categoriaRepository;
     }
 
-    public Task<ProductoResponseDto> Handle(CreateProductoCommand request, CancellationToken cancellationToken)
+    public async Task<ProductoResponseDto> Handle(CreateProductoCommand request, CancellationToken cancellationToken)
     {
+        // Validaciones
         if (request.Precio < 0)
             throw new ArgumentException("El precio no puede ser negativo");
 
@@ -27,12 +28,14 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
         if (request.StockMinimo < 0)
             throw new ArgumentException("El stock mínimo no puede ser negativo");
 
-        var categoriaBuscada = _categoriaRepository.GetById(request.CategoriaId);
+        var categoriaBuscada = await _categoriaRepository.GetById(request.CategoriaId);
         if (categoriaBuscada == null)
             throw new ArgumentException("La categoría asignada no existe");
 
-        string sku = GenerarSKU();
+        // Generar SKU
+        string sku = "PROD-" + Guid.NewGuid().ToString("N")[..8].ToUpper();
 
+        // Crear producto
         var producto = new Producto
         {
             Nombre = request.Nombre,
@@ -45,8 +48,9 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
             FechaCreacion = DateTime.Now
         };
 
-        var productoCreado = _productoRepository.Add(producto);
+        var productoCreado = await _productoRepository.Add(producto);
 
+        // Construir respuesta
         var response = new ProductoResponseDto
         {
             Id = productoCreado.Id,
@@ -59,11 +63,6 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
             Precio = productoCreado.Precio
         };
 
-        return Task.FromResult(response);
-    }
-
-    private string GenerarSKU()
-    {
-        return "PROD-" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
+        return response;
     }
 }

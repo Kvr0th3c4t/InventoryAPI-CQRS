@@ -1,6 +1,4 @@
-using InventoryAPI.Events;
-
-namespace InventoryAPI.Services;
+namespace InventoryAPI.Events;
 
 public class ConsoleEventPublisher : IEventPublisher
 {

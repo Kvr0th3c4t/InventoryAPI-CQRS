@@ -11,28 +11,28 @@ public class GetMovimientoByIdQueryHandler : IRequestHandler<GetMovimientoByIdQu
     private readonly IProveedorRepository _proveedorRepository;
 
     public GetMovimientoByIdQueryHandler(
-        IMovimientoStockRepository movimientoStockRepository,
+        IMovimientoStockRepository movimientoRepository,
         IProductoRepository productoRepository,
         IProveedorRepository proveedorRepository)
     {
-        _movimientoRepository = movimientoStockRepository;
+        _movimientoRepository = movimientoRepository;
         _productoRepository = productoRepository;
         _proveedorRepository = proveedorRepository;
     }
 
-    public Task<MovimientoStockResponseDto> Handle(GetMovimientoByIdQuery request, CancellationToken cancellationToken)
+    public async Task<MovimientoStockResponseDto> Handle(GetMovimientoByIdQuery request, CancellationToken cancellationToken)
     {
-        var movimiento = _movimientoRepository.GetById(request.Id);
+        var movimiento = await _movimientoRepository.GetById(request.Id);
 
         if (movimiento == null)
-        {
             throw new KeyNotFoundException($"El movimiento con Id {request.Id} no existe");
-        }
 
-        var producto = _productoRepository.GetById(movimiento.ProductoId);
+        // Obtener el producto
+        var producto = await _productoRepository.GetById(movimiento.ProductoId);
 
+        // Obtener el proveedor (solo si existe)
         var proveedor = movimiento.ProveedorId.HasValue
-            ? _proveedorRepository.GetById(movimiento.ProveedorId.Value)
+            ? await _proveedorRepository.GetById(movimiento.ProveedorId.Value)
             : null;
 
         var result = new MovimientoStockResponseDto
@@ -48,6 +48,6 @@ public class GetMovimientoByIdQueryHandler : IRequestHandler<GetMovimientoByIdQu
             Fecha = movimiento.FechaMovimiento
         };
 
-        return Task.FromResult(result);
+        return result;
     }
 }

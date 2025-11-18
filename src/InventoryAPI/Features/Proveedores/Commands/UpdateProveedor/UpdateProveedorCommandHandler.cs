@@ -13,27 +13,33 @@ public class UpdateProveedorCommandHandler : IRequestHandler<UpdateProveedorComm
         _proveedorRepository = proveedorRepository;
     }
 
-    public Task<ProveedorResponseDto> Handle(UpdateProveedorCommand request, CancellationToken cancellationToken)
+    public async Task<ProveedorResponseDto> Handle(UpdateProveedorCommand request, CancellationToken cancellationToken)
     {
-        var proveedor = _proveedorRepository.GetById(request.Id);
+        var proveedor = await _proveedorRepository.GetById(request.Id);
 
         if (proveedor == null)
-            throw new ArgumentException("El proveedor no existe");
+            throw new KeyNotFoundException($"Proveedor con ID {request.Id} no encontrado");
 
-        if (request.Nombre != null) proveedor.Nombre = request.Nombre;
-        if (request.Email != null) proveedor.Email = request.Email;
-        if (request.Telefono != null) proveedor.Telefono = request.Telefono;
+        // Actualización parcial
+        if (request.Nombre != null)
+            proveedor.Nombre = request.Nombre;
 
-        var proveedorModificado = _proveedorRepository.Update(proveedor);
+        if (request.Email != null)
+            proveedor.Email = request.Email;
+
+        if (request.Telefono != null)
+            proveedor.Telefono = request.Telefono;
+
+        var proveedorActualizado = await _proveedorRepository.Update(proveedor);
 
         var response = new ProveedorResponseDto
         {
-            Id = proveedorModificado.Id,
-            Nombre = proveedorModificado.Nombre,
-            Email = proveedorModificado.Email,
-            Telefono = proveedorModificado.Telefono
+            Id = proveedorActualizado!.Id,
+            Nombre = proveedorActualizado.Nombre,
+            Email = proveedorActualizado.Email,
+            Telefono = proveedorActualizado.Telefono
         };
 
-        return Task.FromResult(response);
+        return response;
     }
 }

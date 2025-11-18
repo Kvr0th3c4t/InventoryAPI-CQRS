@@ -1,7 +1,8 @@
+using InventoryAPI.Features.Productos.DeleteProducto;
 using InventoryAPI.Repositories;
 using MediatR;
 
-namespace InventoryAPI.Features.Productos.DeleteProducto;
+namespace InventoryAPI.Features.Productos.Commands.DeleteProducto;
 
 public class DeleteProductoCommandHandler : IRequestHandler<DeleteProductoCommand, bool>
 {
@@ -11,13 +12,14 @@ public class DeleteProductoCommandHandler : IRequestHandler<DeleteProductoComman
     {
         _productoRepository = productoRepository;
     }
-    public Task<bool> Handle(DeleteProductoCommand request, CancellationToken cancellationToken)
+
+    public async Task<bool> Handle(DeleteProductoCommand request, CancellationToken cancellationToken)
     {
-        var eliminado = _productoRepository.Delete(request.Id);
+        var producto = await _productoRepository.GetById(request.Id);
 
-        if (!eliminado)
-            throw new KeyNotFoundException($"No se puede eliminar. El producto con Id {request.Id} no existe");
+        if (producto == null)
+            throw new KeyNotFoundException($"Producto con ID {request.Id} no encontrado");
 
-        return Task.FromResult(true);
+        return await _productoRepository.Delete(request.Id);
     }
 }

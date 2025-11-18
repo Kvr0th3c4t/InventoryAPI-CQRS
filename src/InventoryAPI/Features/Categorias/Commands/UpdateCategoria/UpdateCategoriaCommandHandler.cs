@@ -6,34 +6,36 @@ namespace InventoryAPI.Features.Categorias.Commands.UpdateCategoria;
 
 public class UpdateCategoriaCommandHandler : IRequestHandler<UpdateCategoriaCommand, CategoriaResponseDto>
 {
-    private readonly ICategoriaRepository _categoriarepository;
+    private readonly ICategoriaRepository _categoriaRepository;
 
     public UpdateCategoriaCommandHandler(ICategoriaRepository categoriaRepository)
     {
-        _categoriarepository = categoriaRepository;
+        _categoriaRepository = categoriaRepository;
     }
 
-    public Task<CategoriaResponseDto> Handle(UpdateCategoriaCommand request, CancellationToken cancellationToken)
+    public async Task<CategoriaResponseDto> Handle(UpdateCategoriaCommand request, CancellationToken cancellationToken)
     {
-        var categoria = _categoriarepository.GetById(request.Id);
+        var categoria = await _categoriaRepository.GetById(request.Id);
 
         if (categoria == null)
-        {
-            throw new ArgumentException("La categoría no existe");
-        }
+            throw new KeyNotFoundException($"Categoría con ID {request.Id} no encontrada");
 
-        if (request.Nombre != null) categoria.Nombre = request.Nombre;
-        if (request.Descripcion != null) categoria.Descripcion = request.Descripcion;
+        // Actualización parcial
+        if (request.Nombre != null)
+            categoria.Nombre = request.Nombre;
 
-        _categoriarepository.Update(categoria);
+        if (request.Descripcion != null)
+            categoria.Descripcion = request.Descripcion;
+
+        var categoriaActualizada = await _categoriaRepository.Update(categoria);
 
         var response = new CategoriaResponseDto
         {
-            Id = categoria.Id,
-            Nombre = categoria.Nombre,
-            Descripcion = categoria.Descripcion
+            Id = categoriaActualizada!.Id,
+            Nombre = categoriaActualizada.Nombre,
+            Descripcion = categoriaActualizada.Descripcion
         };
 
-        return Task.FromResult(response);
+        return response;
     }
 }

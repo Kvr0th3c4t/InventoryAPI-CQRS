@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using InventoryAPI.Models;
 using InventoryAPI.Dtos.ProductoDtos;
-using InventoryAPI.Services;
 using MediatR;
 using InventoryAPI.Features.Productos.Commands.CreateProducto;
 using InventoryAPI.Features.Productos.Queries.GetProductoById;

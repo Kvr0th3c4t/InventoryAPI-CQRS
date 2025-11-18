@@ -1,8 +1,7 @@
-using InventoryAPI.Features.Categorias.Commands.DeleteCategoria;
 using InventoryAPI.Repositories;
 using MediatR;
 
-namespace InventoryAPI.Features.Categorias.DeleteCategoria;
+namespace InventoryAPI.Features.Categorias.Commands.DeleteCategoria;
 
 public class DeleteCategoriaCommandHandler : IRequestHandler<DeleteCategoriaCommand, bool>
 {
@@ -12,13 +11,14 @@ public class DeleteCategoriaCommandHandler : IRequestHandler<DeleteCategoriaComm
     {
         _categoriaRepository = categoriaRepository;
     }
-    public Task<bool> Handle(DeleteCategoriaCommand request, CancellationToken cancellationToken)
+
+    public async Task<bool> Handle(DeleteCategoriaCommand request, CancellationToken cancellationToken)
     {
-        var eliminado = _categoriaRepository.Delete(request.Id);
+        var categoria = await _categoriaRepository.GetById(request.Id);
 
-        if (!eliminado)
-            throw new KeyNotFoundException($"No se puede eliminar. La categoria con Id {request.Id} no existe");
+        if (categoria == null)
+            throw new KeyNotFoundException($"Categoría con ID {request.Id} no encontrada");
 
-        return Task.FromResult(true);
+        return await _categoriaRepository.Delete(request.Id);
     }
 }

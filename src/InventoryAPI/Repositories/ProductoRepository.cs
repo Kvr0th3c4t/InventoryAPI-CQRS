@@ -1,5 +1,6 @@
 using InventoryAPI.Data;
 using InventoryAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Repositories;
 
@@ -12,41 +13,45 @@ public class ProductoRepository : IProductoRepository
         _context = context;
     }
 
-    public Producto Add(Producto producto)
+    public async Task<Producto> Add(Producto producto)
     {
         _context.Productos.Add(producto);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         return producto;
     }
 
-    public bool Delete(int id)
+    public async Task<bool> Delete(int id)
     {
-        var producto = _context.Productos.FirstOrDefault(p => p.Id == id);
+        var producto = await _context.Productos.FirstOrDefaultAsync(p => p.Id == id);
 
         if (producto == null)
             return false;
 
         _context.Productos.Remove(producto);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         return true;
     }
 
-    public List<Producto> GetAll()
+    public async Task<List<Producto>> GetAll()
     {
-        return _context.Productos.ToList();
+        return await _context.Productos
+            .Include(p => p.Categoria)
+            .ToListAsync();
     }
 
-    public Producto? GetById(int id)
+    public async Task<Producto?> GetById(int id)
     {
-        return _context.Productos.FirstOrDefault(p => p.Id == id);
+        return await _context.Productos
+            .Include(p => p.Categoria)
+            .FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public Producto? Update(Producto producto)
+    public async Task<Producto?> Update(Producto producto)
     {
         _context.Update(producto);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return producto;
     }
 }

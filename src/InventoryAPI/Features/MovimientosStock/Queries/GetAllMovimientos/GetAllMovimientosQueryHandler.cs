@@ -11,42 +11,45 @@ public class GetAllMovimientosQueryHandler : IRequestHandler<GetAllMovimientosQu
     private readonly IProveedorRepository _proveedorRepository;
 
     public GetAllMovimientosQueryHandler(
-        IMovimientoStockRepository movimientoStockRepository,
+        IMovimientoStockRepository movimientosRepository,
         IProductoRepository productoRepository,
         IProveedorRepository proveedorRepository)
     {
-        _movimientosRepository = movimientoStockRepository;
+        _movimientosRepository = movimientosRepository;
         _productoRepository = productoRepository;
         _proveedorRepository = proveedorRepository;
     }
 
-    public Task<IEnumerable<MovimientoStockResponseDto>> Handle(GetAllMovimientosQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<MovimientoStockResponseDto>> Handle(GetAllMovimientosQuery request, CancellationToken cancellationToken)
     {
-        var movimientos = _movimientosRepository.GetAll();
+        var movimientos = await _movimientosRepository.GetAll();
 
-        var result = movimientos
-            .Select(movimiento =>
+        var result = new List<MovimientoStockResponseDto>();
+
+        foreach (var movimiento in movimientos)
+        {
+            // Obtener el producto
+            var producto = await _productoRepository.GetById(movimiento.ProductoId);
+
+            // Obtener el proveedor (solo si existe)
+            var proveedor = movimiento.ProveedorId.HasValue
+                ? await _proveedorRepository.GetById(movimiento.ProveedorId.Value)
+                : null;
+
+            result.Add(new MovimientoStockResponseDto
             {
-                var producto = _productoRepository.GetById(movimiento.ProductoId);
-
-                var proveedor = movimiento.ProveedorId.HasValue
-                    ? _proveedorRepository.GetById(movimiento.ProveedorId.Value)
-                    : null;
-
-                return new MovimientoStockResponseDto
-                {
-                    Id = movimiento.Id,
-                    ProductoId = movimiento.ProductoId,
-                    ProductoNombre = producto?.Nombre,
-                    ProveedorId = movimiento.ProveedorId,
-                    ProveedorNombre = proveedor?.Nombre,
-                    Tipo = movimiento.Tipo,
-                    Cantidad = movimiento.Cantidad,
-                    Razon = movimiento.Razon,
-                    Fecha = movimiento.FechaMovimiento
-                };
+                Id = movimiento.Id,
+                ProductoId = movimiento.ProductoId,
+                ProductoNombre = producto?.Nombre,
+                ProveedorId = movimiento.ProveedorId,
+                ProveedorNombre = proveedor?.Nombre,
+                Tipo = movimiento.Tipo,
+                Cantidad = movimiento.Cantidad,
+                Razon = movimiento.Razon,
+                Fecha = movimiento.FechaMovimiento
             });
+        }
 
-        return Task.FromResult(result);
+        return result;
     }
 }

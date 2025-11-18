@@ -1,5 +1,6 @@
 using InventoryAPI.Data;
 using InventoryAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Repositories;
 
@@ -12,40 +13,41 @@ public class ProveedorRepository : IProveedorRepository
         _context = context;
     }
 
-    public Proveedor Add(Proveedor proveedor)
+    public async Task<Proveedor> Add(Proveedor proveedor)
     {
         _context.Proveedores.Add(proveedor);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
+
         return proveedor;
     }
 
-    public bool Delete(int id)
+    public async Task<bool> Delete(int id)
     {
-        var proveedor = _context.Proveedores.FirstOrDefault(p => p.Id == id);
+        var proveedor = await _context.Proveedores.FirstOrDefaultAsync(p => p.Id == id);
 
-        if (proveedor == null) return false;
+        if (proveedor == null)
+            return false;
 
         _context.Proveedores.Remove(proveedor);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         return true;
-
     }
 
-    public List<Proveedor> GetAll()
+    public async Task<List<Proveedor>> GetAll()
     {
-        return _context.Proveedores.ToList();
+        return await _context.Proveedores.ToListAsync();
     }
 
-    public Proveedor? GetById(int id)
+    public async Task<Proveedor?> GetById(int id)
     {
-        return _context.Proveedores.FirstOrDefault(p => p.Id == id);
+        return await _context.Proveedores.FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public Proveedor? Update(Proveedor proveedor)
+    public async Task<Proveedor?> Update(Proveedor proveedor)
     {
-        _context.Proveedores.Update(proveedor);
-        _context.SaveChanges();
+        _context.Update(proveedor);
+        await _context.SaveChangesAsync();
         return proveedor;
     }
 }

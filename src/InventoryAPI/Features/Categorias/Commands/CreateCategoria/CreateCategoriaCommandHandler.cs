@@ -14,18 +14,15 @@ public class CreateCategoriaCommandHandler : IRequestHandler<CreateCategoriaComm
         _categoriaRepository = categoriaRepository;
     }
 
-    public Task<CategoriaResponseDto> Handle(CreateCategoriaCommand request, CancellationToken cancellationToken)
+    public async Task<CategoriaResponseDto> Handle(CreateCategoriaCommand request, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(request.Nombre))
-            throw new ArgumentException("La categoría debe tener un nombre");
-
         var categoria = new Categoria
         {
             Nombre = request.Nombre,
             Descripcion = request.Descripcion
         };
 
-        var categoriaCreada = _categoriaRepository.Add(categoria);
+        var categoriaCreada = await _categoriaRepository.Add(categoria);
 
         var response = new CategoriaResponseDto
         {
@@ -34,6 +31,6 @@ public class CreateCategoriaCommandHandler : IRequestHandler<CreateCategoriaComm
             Descripcion = categoriaCreada.Descripcion
         };
 
-        return Task.FromResult(response);
+        return response;
     }
 }

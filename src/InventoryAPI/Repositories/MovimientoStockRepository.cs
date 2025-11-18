@@ -1,53 +1,39 @@
 using InventoryAPI.Data;
 using InventoryAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Repositories;
 
-public class MovimientosStockRepository : IMovimientoStockRepository
+public class MovimientoStockRepository : IMovimientoStockRepository
 {
     private readonly ApplicationDbContext _context;
 
-    public MovimientosStockRepository(ApplicationDbContext context)
+    public MovimientoStockRepository(ApplicationDbContext context)
     {
         _context = context;
     }
 
-    public MovimientoStock Add(MovimientoStock movimientoStock)
+    public async Task<MovimientoStock> Add(MovimientoStock movimiento)
     {
-        _context.MovimientosStock.Add(movimientoStock);
-        _context.SaveChanges();
+        _context.MovimientosStock.Add(movimiento);
+        await _context.SaveChangesAsync();
 
-        return movimientoStock;
+        return movimiento;
     }
 
-    public bool Delete(int id)
+    public async Task<List<MovimientoStock>> GetAll()
     {
-        var movimiento = _context.MovimientosStock.FirstOrDefault(m => m.Id == id);
-
-        if (movimiento == null) return false;
-
-        _context.MovimientosStock.Remove(movimiento);
-        _context.SaveChanges();
-
-        return true;
+        return await _context.MovimientosStock
+            .Include(m => m.Producto)
+            .Include(m => m.Proveedor)
+            .ToListAsync();
     }
 
-    public List<MovimientoStock> GetAll()
+    public async Task<MovimientoStock?> GetById(int id)
     {
-        return _context.MovimientosStock.ToList();
-    }
-
-    public MovimientoStock? GetById(int id)
-    {
-        return _context.MovimientosStock.FirstOrDefault(m => m.Id == id);
-
-    }
-
-    public MovimientoStock? Update(MovimientoStock movimientoStock)
-    {
-        _context.MovimientosStock.Update(movimientoStock);
-        _context.SaveChanges();
-
-        return movimientoStock;
+        return await _context.MovimientosStock
+            .Include(m => m.Producto)
+            .Include(m => m.Proveedor)
+            .FirstOrDefaultAsync(m => m.Id == id);
     }
 }

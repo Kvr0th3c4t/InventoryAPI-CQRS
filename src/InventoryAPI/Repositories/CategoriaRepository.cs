@@ -1,5 +1,6 @@
 using InventoryAPI.Data;
 using InventoryAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Repositories;
 
@@ -12,41 +13,41 @@ public class CategoriaRepository : ICategoriaRepository
         _context = context;
     }
 
-    public Categoria Add(Categoria categoria)
+    public async Task<Categoria> Add(Categoria categoria)
     {
         _context.Categorias.Add(categoria);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         return categoria;
     }
 
-    public bool Delete(int id)
+    public async Task<bool> Delete(int id)
     {
-        var categoria = _context.Categorias.FirstOrDefault(p => p.Id == id);
+        var categoria = await _context.Categorias.FirstOrDefaultAsync(c => c.Id == id);
 
         if (categoria == null)
             return false;
 
         _context.Categorias.Remove(categoria);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         return true;
     }
 
-    public List<Categoria> GetAll()
+    public async Task<List<Categoria>> GetAll()
     {
-        return _context.Categorias.ToList();
+        return await _context.Categorias.ToListAsync();
     }
 
-    public Categoria? GetById(int id)
+    public async Task<Categoria?> GetById(int id)
     {
-        return _context.Categorias.FirstOrDefault(c => c.Id == id);
+        return await _context.Categorias.FirstOrDefaultAsync(c => c.Id == id);
     }
 
-    public Categoria? Update(Categoria categoria)
+    public async Task<Categoria?> Update(Categoria categoria)
     {
         _context.Update(categoria);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return categoria;
     }
 }

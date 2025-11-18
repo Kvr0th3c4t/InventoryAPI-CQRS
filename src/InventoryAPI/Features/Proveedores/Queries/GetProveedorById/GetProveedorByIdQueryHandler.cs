@@ -13,14 +13,14 @@ public class GetProveedorByIdQueryHandler : IRequestHandler<GetProveedorByIdQuer
         _proveedorRepository = proveedorRepository;
     }
 
-    public Task<ProveedorResponseDto> Handle(GetProveedorByIdQuery request, CancellationToken cancellationToken)
+    public async Task<ProveedorResponseDto> Handle(GetProveedorByIdQuery request, CancellationToken cancellationToken)
     {
-        var proveedor = _proveedorRepository.GetById(request.Id);
+        var proveedor = await _proveedorRepository.GetById(request.Id);
 
         if (proveedor == null)
             throw new KeyNotFoundException($"Proveedor con ID {request.Id} no encontrado");
 
-        var result = new ProveedorResponseDto
+        var response = new ProveedorResponseDto
         {
             Id = proveedor.Id,
             Nombre = proveedor.Nombre,
@@ -28,6 +28,6 @@ public class GetProveedorByIdQueryHandler : IRequestHandler<GetProveedorByIdQuer
             Telefono = proveedor.Telefono
         };
 
-        return Task.FromResult(result);
+        return response;
     }
 }

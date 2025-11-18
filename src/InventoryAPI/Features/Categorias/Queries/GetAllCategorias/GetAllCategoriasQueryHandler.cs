@@ -13,18 +13,17 @@ public class GetAllCategoriasQueryHandler : IRequestHandler<GetAllCategoriasQuer
         _categoriaRepository = categoriaRepository;
     }
 
-    public Task<IEnumerable<CategoriaResponseDto>> Handle(GetAllCategoriasQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<CategoriaResponseDto>> Handle(GetAllCategoriasQuery request, CancellationToken cancellationToken)
     {
-        var categorias = _categoriaRepository.GetAll();
+        var categorias = await _categoriaRepository.GetAll();
 
-        var result = categorias
-            .Select(categoria => new CategoriaResponseDto
-            {
-                Id = categoria.Id,
-                Nombre = categoria.Nombre,
-                Descripcion = categoria.Descripcion
-            });
+        var result = categorias.Select(c => new CategoriaResponseDto
+        {
+            Id = c.Id,
+            Nombre = c.Nombre,
+            Descripcion = c.Descripcion
+        });
 
-        return Task.FromResult(result);
+        return result;
     }
 }

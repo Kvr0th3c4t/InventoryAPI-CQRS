@@ -1,6 +1,5 @@
 using InventoryAPI.Data;
 using InventoryAPI.Repositories;
-using InventoryAPI.Services;
 using InventoryAPI.Events;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,7 +12,7 @@ builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IEventPublisher, ConsoleEventPublisher>();
 builder.Services.AddScoped<IProveedorRepository, ProveedorRepository>();
-builder.Services.AddScoped<IMovimientoStockRepository, MovimientosStockRepository>();
+builder.Services.AddScoped<IMovimientoStockRepository, MovimientoStockRepository>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

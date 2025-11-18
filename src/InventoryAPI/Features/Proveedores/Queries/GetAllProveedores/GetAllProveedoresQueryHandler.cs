@@ -13,21 +13,18 @@ public class GetAllProveedoresQueryHandler : IRequestHandler<GetAllProveedoresQu
         _proveedorRepository = proveedorRepository;
     }
 
-    public Task<IEnumerable<ProveedorResponseDto>> Handle(GetAllProveedoresQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<ProveedorResponseDto>> Handle(GetAllProveedoresQuery request, CancellationToken cancellationToken)
     {
-        var proveedores = _proveedorRepository.GetAll();
+        var proveedores = await _proveedorRepository.GetAll();
 
-        var result = proveedores
-             .Select(proveedor =>
-             {
-                 return new ProveedorResponseDto
-                 {
-                     Id = proveedor.Id,
-                     Nombre = proveedor.Nombre,
-                     Email = proveedor.Email,
-                     Telefono = proveedor.Telefono
-                 };
-             });
-        return Task.FromResult(result);
+        var result = proveedores.Select(p => new ProveedorResponseDto
+        {
+            Id = p.Id,
+            Nombre = p.Nombre,
+            Email = p.Email,
+            Telefono = p.Telefono
+        });
+
+        return result;
     }
 }

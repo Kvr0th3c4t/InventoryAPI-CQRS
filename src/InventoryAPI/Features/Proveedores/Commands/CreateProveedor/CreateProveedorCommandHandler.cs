@@ -14,11 +14,8 @@ public class CreateProveedorCommandHandler : IRequestHandler<CreateProveedorComm
         _proveedorRepository = proveedorRepository;
     }
 
-    public Task<ProveedorResponseDto> Handle(CreateProveedorCommand request, CancellationToken cancellationToken)
+    public async Task<ProveedorResponseDto> Handle(CreateProveedorCommand request, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(request.Nombre))
-            throw new ArgumentException("El proveedor debe tener un nombre");
-
         var proveedor = new Proveedor
         {
             Nombre = request.Nombre,
@@ -26,7 +23,7 @@ public class CreateProveedorCommandHandler : IRequestHandler<CreateProveedorComm
             Telefono = request.Telefono
         };
 
-        var proveedorCreado = _proveedorRepository.Add(proveedor);
+        var proveedorCreado = await _proveedorRepository.Add(proveedor);
 
         var response = new ProveedorResponseDto
         {
@@ -36,6 +33,6 @@ public class CreateProveedorCommandHandler : IRequestHandler<CreateProveedorComm
             Telefono = proveedorCreado.Telefono
         };
 
-        return Task.FromResult(response);
+        return response;
     }
 }

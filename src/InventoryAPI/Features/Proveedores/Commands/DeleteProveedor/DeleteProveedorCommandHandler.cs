@@ -6,44 +6,28 @@ namespace InventoryAPI.Features.Proveedores.Commands.DeleteProveedor;
 public class DeleteProveedorCommandHandler : IRequestHandler<DeleteProveedorCommand, bool>
 {
     private readonly IProveedorRepository _proveedorRepository;
-    private readonly IProductoRepository _productosRepository;
-    private readonly IMovimientoStockRepository _movimientosRepository;
+    private readonly IMovimientoStockRepository _movimientoStockRepository;
 
-    public DeleteProveedorCommandHandler(IProveedorRepository proveedorRepository, IProductoRepository productoRepository, IMovimientoStockRepository movimientoStockRepository)
+    public DeleteProveedorCommandHandler(IProveedorRepository proveedorRepository, IMovimientoStockRepository movimientoStockRepository)
     {
         _proveedorRepository = proveedorRepository;
-        _productosRepository = productoRepository;
-        _movimientosRepository = movimientoStockRepository;
+        _movimientoStockRepository = movimientoStockRepository;
     }
 
-    public Task<bool> Handle(DeleteProveedorCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(DeleteProveedorCommand request, CancellationToken cancellationToken)
     {
-        var proveedor = _proveedorRepository.GetById(request.Id);
+        var proveedor = await _proveedorRepository.GetById(request.Id);
 
         if (proveedor == null)
-            throw new KeyNotFoundException($"No se puede eliminar. El proveedor con Id {request.Id} no existe");
+            throw new KeyNotFoundException($"Proveedor con ID {request.Id} no encontrado");
 
-        var tieneProductos = _productosRepository.GetAll()
-            .Any(p => p.ProveedorId == proveedor.Id);
-
-        if (tieneProductos)
-        {
-            throw new InvalidOperationException(
-                "No se puede eliminar: el proveedor tiene productos asociados");
-        }
-
-
-        var tieneMovimientos = _movimientosRepository.GetAll()
-            .Any(m => m.ProveedorId == proveedor.Id);
-
+        // Verificar que no tenga movimientos de stock
+        var movimientos = await _movimientoStockRepository.GetAll();
+        var tieneMovimientos = movimientos.Any(m => m.ProveedorId == request.Id);
 
         if (tieneMovimientos)
-        {
-            throw new InvalidOperationException(
-                "No se puede eliminar: el proveedor tiene movimientos de stock asociados");
-        }
-        _proveedorRepository.Delete(request.Id);
+            throw new InvalidOperationException("No se puede eliminar el proveedor porque tiene movimientos de stock asociados");
 
-        return Task.FromResult(true);
+        return await _proveedorRepository.Delete(request.Id);
     }
 }

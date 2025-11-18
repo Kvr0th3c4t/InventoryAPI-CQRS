@@ -7,41 +7,28 @@ namespace InventoryAPI.Features.Productos.Queries.GetAllProductos;
 public class GetAllProductosQueryHandler : IRequestHandler<GetAllProductosQuery, IEnumerable<ProductoResponseDto>>
 {
     private readonly IProductoRepository _productoRepository;
-    private readonly ICategoriaRepository _categoriaRepository;
 
-    public GetAllProductosQueryHandler(IProductoRepository productoRepository, ICategoriaRepository categoriaRepository)
+    public GetAllProductosQueryHandler(IProductoRepository productoRepository)
     {
-        _categoriaRepository = categoriaRepository;
         _productoRepository = productoRepository;
     }
 
-    public Task<IEnumerable<ProductoResponseDto>> Handle(GetAllProductosQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<ProductoResponseDto>> Handle(GetAllProductosQuery request, CancellationToken cancellationToken)
     {
-        var productos = _productoRepository.GetAll();
+        var productos = await _productoRepository.GetAll();
 
-        var result = productos
-            .Select(producto =>
-            {
-                var categoria = _categoriaRepository.GetById(producto.CategoriaId);
+        var result = productos.Select(p => new ProductoResponseDto
+        {
+            Id = p.Id,
+            Nombre = p.Nombre,
+            Descripcion = p.Descripcion,
+            SKU = p.SKU,
+            CategoriaId = p.CategoriaId,
+            CategoriaNombre = p.Categoria?.Nombre ?? string.Empty,
+            StockActual = p.StockActual,
+            Precio = p.Precio
+        });
 
-                if (categoria == null)
-                    throw new InvalidOperationException(
-                        $"Producto {producto.Id} tiene categoría inválida {producto.CategoriaId}");
-
-
-                return new ProductoResponseDto
-                {
-                    Id = producto.Id,
-                    Nombre = producto.Nombre,
-                    Descripcion = producto.Descripcion,
-                    SKU = producto.SKU,
-                    CategoriaId = producto.CategoriaId,
-                    CategoriaNombre = categoria.Nombre,
-                    StockActual = producto.StockActual,
-                    Precio = producto.Precio
-                };
-            });
-
-        return Task.FromResult(result);
+        return result;
     }
 }

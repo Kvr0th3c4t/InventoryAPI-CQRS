@@ -7,25 +7,21 @@ namespace InventoryAPI.Features.Productos.Queries.GetProductoById;
 public class GetProductoByIdQueryHandler : IRequestHandler<GetProductoByIdQuery, ProductoResponseDto>
 {
     private readonly IProductoRepository _productoRepository;
-    private readonly ICategoriaRepository _categoriaRepository;
 
-    public GetProductoByIdQueryHandler(IProductoRepository productoRepository, ICategoriaRepository categoriaRepository)
+    public GetProductoByIdQueryHandler(IProductoRepository productoRepository)
     {
         _productoRepository = productoRepository;
-        _categoriaRepository = categoriaRepository;
     }
 
-    public Task<ProductoResponseDto> Handle(GetProductoByIdQuery request, CancellationToken cancellationToken)
+    public async Task<ProductoResponseDto> Handle(GetProductoByIdQuery request, CancellationToken cancellationToken)
     {
-        var producto = _productoRepository.GetById(request.Id);
+        var producto = await _productoRepository.GetById(request.Id);
 
         if (producto == null)
             throw new KeyNotFoundException($"Producto con ID {request.Id} no encontrado");
 
-        var categoria = _categoriaRepository.GetById(producto.CategoriaId);
-
-        if (categoria == null)
-            throw new InvalidOperationException($"Producto {producto.Id} tiene categoría no válida");
+        if (producto.Categoria == null)
+            throw new KeyNotFoundException("Datos corruptos: categoría no existe");
 
         var response = new ProductoResponseDto
         {
@@ -34,11 +30,11 @@ public class GetProductoByIdQueryHandler : IRequestHandler<GetProductoByIdQuery,
             Descripcion = producto.Descripcion,
             SKU = producto.SKU,
             CategoriaId = producto.CategoriaId,
-            CategoriaNombre = categoria.Nombre,
+            CategoriaNombre = producto.Categoria.Nombre,
             StockActual = producto.StockActual,
             Precio = producto.Precio
         };
 
-        return Task.FromResult(response);
+        return response;
     }
 }
