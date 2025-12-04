@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # ====================================#
+  # SQL SERVER                          #
+  # ====================================#
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: inventoryapi-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+  # ====================================#
+  # API                                 #
+  # ====================================#
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inventoryapi-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=InventoryDB;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
+    ports:
+      - "5000:8080"
+    depends_on:
+      - sqlserver
+    restart: on-failure
+
+# ====================================#
+# VOLÚMENES (datos persistentes)      #
+# ====================================#
+volumes:
+  sqlserver-data:
