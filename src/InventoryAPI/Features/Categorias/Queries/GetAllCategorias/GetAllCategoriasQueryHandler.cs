@@ -1,10 +1,12 @@
 using InventoryAPI.Dtos.CategoriaDtos;
 using InventoryAPI.Repositories;
+using InventoryAPI.Dtos.Pagination;
 using MediatR;
 
 namespace InventoryAPI.Features.Categorias.Queries.GetAllCategorias;
 
-public class GetAllCategoriasQueryHandler : IRequestHandler<GetAllCategoriasQuery, IEnumerable<CategoriaResponseDto>>
+public class GetAllCategoriasQueryHandler
+    : IRequestHandler<GetAllCategoriasQuery, PagedResponse<CategoriaResponseDto>>
 {
     private readonly ICategoriaRepository _categoriaRepository;
 
@@ -13,17 +15,14 @@ public class GetAllCategoriasQueryHandler : IRequestHandler<GetAllCategoriasQuer
         _categoriaRepository = categoriaRepository;
     }
 
-    public async Task<IEnumerable<CategoriaResponseDto>> Handle(GetAllCategoriasQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<CategoriaResponseDto>> Handle(
+        GetAllCategoriasQuery request,
+        CancellationToken cancellationToken)
     {
-        var categorias = await _categoriaRepository.GetAll();
+        var page = request.Page < 1 ? 1 : request.Page;
+        var pageSize = request.PageSize < 1 ? 10 :
+                       request.PageSize > 100 ? 100 : request.PageSize;
 
-        var result = categorias.Select(c => new CategoriaResponseDto
-        {
-            Id = c.Id,
-            Nombre = c.Nombre,
-            Descripcion = c.Descripcion
-        });
-
-        return result;
+        return await _categoriaRepository.GetAllPaginated(page, pageSize);
     }
 }

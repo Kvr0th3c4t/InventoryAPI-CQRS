@@ -1,6 +1,8 @@
 using InventoryAPI.Dtos.MovimientoStockDtos;
+using InventoryAPI.Dtos.Pagination;
 using MediatR;
 
 namespace InventoryAPI.Features.MovimientosStock.Queries.GetAllMovimientos;
 
-public record GetAllMovimientosQuery() : IRequest<IEnumerable<MovimientoStockResponseDto>>;
+public record GetAllMovimientosQuery(int Page = 1, int PageSize = 10)
+    : IRequest<PagedResponse<MovimientoStockResponseDto>>;

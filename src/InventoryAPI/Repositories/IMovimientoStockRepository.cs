@@ -1,5 +1,7 @@
 using InventoryAPI.Dtos.ProductoDtos;
 using InventoryAPI.Dtos.StatsDtos.MovimientosStatsDto;
+using InventoryAPI.Dtos.Pagination;
+using InventoryAPI.Dtos.MovimientoStockDtos;
 using InventoryAPI.Models;
 
 namespace InventoryAPI.Repositories;
@@ -16,4 +18,5 @@ public interface IMovimientoStockRepository
     Task<List<TipoMovimientoDto>> GetTipoMovimientosAsync();
     Task<List<MovimientoPorProveedorDto>> GetMovimientosPorProveedorAsync();
     Task<ProductoResponseDto?> GetProductoConMasAjustesAsync();
+    Task<PagedResponse<MovimientoStockResponseDto>> GetAllPaginated(int page, int pageSize);
 }

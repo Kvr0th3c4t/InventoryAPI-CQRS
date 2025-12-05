@@ -1,10 +1,11 @@
 using InventoryAPI.Dtos.MovimientoStockDtos;
 using InventoryAPI.Repositories;
+using InventoryAPI.Dtos.Pagination;
 using MediatR;
 
 namespace InventoryAPI.Features.MovimientosStock.Queries.GetAllMovimientos;
 
-public class GetAllMovimientosQueryHandler : IRequestHandler<GetAllMovimientosQuery, IEnumerable<MovimientoStockResponseDto>>
+public class GetAllMovimientosQueryHandler : IRequestHandler<GetAllMovimientosQuery, PagedResponse<MovimientoStockResponseDto>>
 {
     private readonly IMovimientoStockRepository _movimientosRepository;
     private readonly IProductoRepository _productoRepository;
@@ -20,36 +21,12 @@ public class GetAllMovimientosQueryHandler : IRequestHandler<GetAllMovimientosQu
         _proveedorRepository = proveedorRepository;
     }
 
-    public async Task<IEnumerable<MovimientoStockResponseDto>> Handle(GetAllMovimientosQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<MovimientoStockResponseDto>> Handle(GetAllMovimientosQuery request, CancellationToken cancellationToken)
     {
-        var movimientos = await _movimientosRepository.GetAll();
+        var page = request.Page < 1 ? 1 : request.Page;
+        var pageSize = request.PageSize < 1 ? 10 :
+                       request.PageSize > 100 ? 100 : request.PageSize;
 
-        var result = new List<MovimientoStockResponseDto>();
-
-        foreach (var movimiento in movimientos)
-        {
-            // Obtener el producto
-            var producto = await _productoRepository.GetById(movimiento.ProductoId);
-
-            // Obtener el proveedor (solo si existe)
-            var proveedor = movimiento.ProveedorId.HasValue
-                ? await _proveedorRepository.GetById(movimiento.ProveedorId.Value)
-                : null;
-
-            result.Add(new MovimientoStockResponseDto
-            {
-                Id = movimiento.Id,
-                ProductoId = movimiento.ProductoId,
-                ProductoNombre = producto?.Nombre,
-                ProveedorId = movimiento.ProveedorId,
-                ProveedorNombre = proveedor?.Nombre,
-                Tipo = movimiento.Tipo,
-                Cantidad = movimiento.Cantidad,
-                Razon = movimiento.Razon,
-                Fecha = movimiento.FechaMovimiento
-            });
-        }
-
-        return result;
+        return await _movimientosRepository.GetAllPaginated(page, pageSize);
     }
 }

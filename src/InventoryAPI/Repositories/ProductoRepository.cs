@@ -2,6 +2,7 @@ using InventoryAPI.Data;
 using InventoryAPI.Dtos.ProductoDtos;
 using InventoryAPI.Dtos.StatsDtos.ProductosStatsDto;
 using InventoryAPI.Models;
+using InventoryAPI.Dtos.Pagination;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Repositories;
@@ -208,5 +209,32 @@ public class ProductoRepository : IProductoRepository
         _context.Update(producto);
         await _context.SaveChangesAsync();
         return producto;
+    }
+
+    public async Task<PagedResponse<ProductoResponseDto>> GetAllPaginated(int page, int pageSize)
+    {
+        var totalCount = await _context.Productos.CountAsync();
+
+        var productos = await _context.Productos
+            .Include(p => p.Categoria)
+            .Include(p => p.Proveedor)
+            .OrderBy(p => p.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var items = productos.Select(p => new ProductoResponseDto
+        {
+            Id = p.Id,
+            Nombre = p.Nombre,
+            Descripcion = p.Descripcion,
+            SKU = p.SKU,
+            CategoriaId = p.CategoriaId,
+            CategoriaNombre = p.Categoria?.Nombre ?? string.Empty,
+            StockActual = p.StockActual,
+            Precio = p.Precio
+        }).ToList();
+
+        return new PagedResponse<ProductoResponseDto>(items, totalCount, page, pageSize);
     }
 }

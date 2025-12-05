@@ -3,6 +3,7 @@ using InventoryAPI.Dtos.ProveedorDtos;
 using InventoryAPI.Dtos.StatsDtos.ProductosStatsDto;
 using InventoryAPI.Dtos.StatsDtos.ProveedoresStatsDto;
 using InventoryAPI.Models;
+using InventoryAPI.Dtos.Pagination;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Repositories;
@@ -103,5 +104,26 @@ public class ProveedorRepository : IProveedorRepository
         _context.Update(proveedor);
         await _context.SaveChangesAsync();
         return proveedor;
+    }
+
+    public async Task<PagedResponse<ProveedorResponseDto>> GetAllPaginated(int page, int pageSize)
+    {
+        var totalCount = await _context.Proveedores.CountAsync();
+
+        var proveedores = await _context.Proveedores
+            .OrderBy(p => p.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var items = proveedores.Select(p => new ProveedorResponseDto
+        {
+            Id = p.Id,
+            Nombre = p.Nombre,
+            Email = p.Email,
+            Telefono = p.Telefono
+        }).ToList();
+
+        return new PagedResponse<ProveedorResponseDto>(items, totalCount, page, pageSize);
     }
 }

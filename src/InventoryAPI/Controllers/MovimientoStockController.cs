@@ -20,9 +20,11 @@ public class MovimientosStockController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
     {
-        var query = new GetAllMovimientosQuery();
+        var query = new GetAllMovimientosQuery(page, pageSize);
         var result = await _mediator.Send(query);
         return Ok(result);
     }

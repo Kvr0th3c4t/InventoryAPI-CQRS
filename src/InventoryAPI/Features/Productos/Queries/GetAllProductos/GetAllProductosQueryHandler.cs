@@ -1,10 +1,11 @@
 using InventoryAPI.Dtos.ProductoDtos;
 using InventoryAPI.Repositories;
+using InventoryAPI.Dtos.Pagination;
 using MediatR;
 
 namespace InventoryAPI.Features.Productos.Queries.GetAllProductos;
 
-public class GetAllProductosQueryHandler : IRequestHandler<GetAllProductosQuery, IEnumerable<ProductoResponseDto>>
+public class GetAllProductosQueryHandler : IRequestHandler<GetAllProductosQuery, PagedResponse<ProductoResponseDto>>
 {
     private readonly IProductoRepository _productoRepository;
 
@@ -13,22 +14,14 @@ public class GetAllProductosQueryHandler : IRequestHandler<GetAllProductosQuery,
         _productoRepository = productoRepository;
     }
 
-    public async Task<IEnumerable<ProductoResponseDto>> Handle(GetAllProductosQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<ProductoResponseDto>> Handle(
+       GetAllProductosQuery request,
+       CancellationToken cancellationToken)
     {
-        var productos = await _productoRepository.GetAll();
+        var page = request.Page < 1 ? 1 : request.Page;
+        var pageSize = request.PageSize < 1 ? 10 :
+                       request.PageSize > 100 ? 100 : request.PageSize;
 
-        var result = productos.Select(p => new ProductoResponseDto
-        {
-            Id = p.Id,
-            Nombre = p.Nombre,
-            Descripcion = p.Descripcion,
-            SKU = p.SKU,
-            CategoriaId = p.CategoriaId,
-            CategoriaNombre = p.Categoria?.Nombre ?? string.Empty,
-            StockActual = p.StockActual,
-            Precio = p.Precio
-        });
-
-        return result;
+        return await _productoRepository.GetAllPaginated(page, pageSize);
     }
 }

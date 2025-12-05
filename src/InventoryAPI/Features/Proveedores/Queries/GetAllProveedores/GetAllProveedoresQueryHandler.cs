@@ -1,10 +1,12 @@
 using InventoryAPI.Dtos.ProveedorDtos;
 using InventoryAPI.Repositories;
+using InventoryAPI.Dtos.Pagination;
 using MediatR;
 
 namespace InventoryAPI.Features.Proveedores.Queries.GetAllProveedores;
 
-public class GetAllProveedoresQueryHandler : IRequestHandler<GetAllProveedoresQuery, IEnumerable<ProveedorResponseDto>>
+public class GetAllProveedoresQueryHandler
+    : IRequestHandler<GetAllProveedoresQuery, PagedResponse<ProveedorResponseDto>>
 {
     private readonly IProveedorRepository _proveedorRepository;
 
@@ -13,18 +15,14 @@ public class GetAllProveedoresQueryHandler : IRequestHandler<GetAllProveedoresQu
         _proveedorRepository = proveedorRepository;
     }
 
-    public async Task<IEnumerable<ProveedorResponseDto>> Handle(GetAllProveedoresQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<ProveedorResponseDto>> Handle(
+        GetAllProveedoresQuery request,
+        CancellationToken cancellationToken)
     {
-        var proveedores = await _proveedorRepository.GetAll();
+        var page = request.Page < 1 ? 1 : request.Page;
+        var pageSize = request.PageSize < 1 ? 10 :
+                       request.PageSize > 100 ? 100 : request.PageSize;
 
-        var result = proveedores.Select(p => new ProveedorResponseDto
-        {
-            Id = p.Id,
-            Nombre = p.Nombre,
-            Email = p.Email,
-            Telefono = p.Telefono
-        });
-
-        return result;
+        return await _proveedorRepository.GetAllPaginated(page, pageSize);
     }
 }

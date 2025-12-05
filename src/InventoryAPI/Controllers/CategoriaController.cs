@@ -4,6 +4,7 @@ using InventoryAPI.Features.Categorias.Commands.DeleteCategoria;
 using InventoryAPI.Features.Categorias.Commands.UpdateCategoria;
 using InventoryAPI.Features.Categorias.Queries.GetAllCategorias;
 using InventoryAPI.Features.Categorias.Queries.GetCategoriaById;
+using InventoryAPI.Dtos.Pagination;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -23,9 +24,11 @@ public class CategoriaController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
     {
-        var query = new GetAllCategoriasQuery();
+        var query = new GetAllCategoriasQuery(page, pageSize);
         var result = await _mediator.Send(query);
         return Ok(result);
     }

@@ -2,6 +2,7 @@ using InventoryAPI.Data;
 using InventoryAPI.Dtos.CategoriaDtos;
 using InventoryAPI.Dtos.StatsDtos.ProductosStatsDto;
 using InventoryAPI.Models;
+using InventoryAPI.Dtos.Pagination;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Repositories;
@@ -107,5 +108,24 @@ public class CategoriaRepository : ICategoriaRepository
         _context.Update(categoria);
         await _context.SaveChangesAsync();
         return categoria;
+    }
+    public async Task<PagedResponse<CategoriaResponseDto>> GetAllPaginated(int page, int pageSize)
+    {
+        var totalCount = await _context.Categorias.CountAsync();
+
+        var categorias = await _context.Categorias
+            .OrderBy(c => c.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var items = categorias.Select(c => new CategoriaResponseDto
+        {
+            Id = c.Id,
+            Nombre = c.Nombre,
+            Descripcion = c.Descripcion
+        }).ToList();
+
+        return new PagedResponse<CategoriaResponseDto>(items, totalCount, page, pageSize);
     }
 }

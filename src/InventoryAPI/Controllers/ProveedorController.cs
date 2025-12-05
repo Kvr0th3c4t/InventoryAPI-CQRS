@@ -6,6 +6,7 @@ using InventoryAPI.Features.Proveedores.Queries.GetAllProveedores;
 using InventoryAPI.Features.Proveedores.Queries.GetProveedorById;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using InventoryAPI.Dtos.Pagination;
 
 namespace InventoryAPI.Controllers;
 
@@ -21,9 +22,11 @@ public class ProveedorController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
     {
-        var query = new GetAllProveedoresQuery();
+        var query = new GetAllProveedoresQuery(page, pageSize);
         var result = await _mediator.Send(query);
         return Ok(result);
     }

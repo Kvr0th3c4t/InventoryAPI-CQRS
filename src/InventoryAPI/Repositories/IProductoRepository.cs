@@ -1,6 +1,7 @@
 using InventoryAPI.Dtos.ProductoDtos;
 using InventoryAPI.Dtos.StatsDtos.ProductosStatsDto;
 using InventoryAPI.Models;
+using InventoryAPI.Dtos.Pagination;
 
 namespace InventoryAPI.Repositories;
 
@@ -19,4 +20,5 @@ public interface IProductoRepository : IGenericRepository<Producto>
     Task<decimal> GetPrecioMasAltoAsync();
     Task<decimal> GetPrecioMasBajoAsync();
     Task<int> GetProductosUltimos30DiasAsync();
+    Task<PagedResponse<ProductoResponseDto>> GetAllPaginated(int page, int pageSize);
 }
