@@ -5,6 +5,8 @@ using InventoryAPI.Enums;
 using InventoryAPI.Models;
 using InventoryAPI.Dtos.StatsDtos;
 using InventoryAPI.Dtos.StatsDtos.ProveedoresStatsDto;
+using InventoryAPI.Dtos.Pagination;
+using InventoryAPI.Dtos.MovimientoStockDtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Repositories;
@@ -148,5 +150,33 @@ public class MovimientoStockRepository : IMovimientoStockRepository
                         .AsNoTracking()
                         .Where(m => m.FechaMovimiento >= fechaLimite)
                         .CountAsync();
+    }
+
+    public async Task<PagedResponse<MovimientoStockResponseDto>> GetAllPaginated(int page, int pageSize)
+    {
+        var totalCount = await _context.MovimientosStock.CountAsync();
+
+        var movimientosStock = await _context.MovimientosStock
+            .Include(m => m.Producto)
+            .Include(m => m.Proveedor)
+            .OrderBy(m => m.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var items = movimientosStock.Select(m => new MovimientoStockResponseDto
+        {
+            Id = m.Id,
+            ProductoId = m.ProductoId,
+            ProductoNombre = m.Producto != null ? m.Producto.Nombre : null,
+            ProveedorId = m.ProveedorId,
+            ProveedorNombre = m.Proveedor != null ? m.Proveedor.Nombre : null,
+            Tipo = m.Tipo,
+            Cantidad = m.Cantidad,
+            Razon = m.Razon,
+            Fecha = m.FechaMovimiento
+        }).ToList();
+
+        return new PagedResponse<MovimientoStockResponseDto>(items, totalCount, page, pageSize);
     }
 }

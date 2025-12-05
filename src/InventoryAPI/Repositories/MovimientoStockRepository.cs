@@ -166,9 +166,10 @@ public class MovimientoStockRepository : IMovimientoStockRepository
         var items = movimientosStock.Select(m => new MovimientoStockResponseDto
         {
             Id = m.Id,
-            ProductoId = m.Producto.Id,
-            ProductoNombre = m.Producto.Nombre,
-            ProveedorNombre = m.Proveedor.Nombre,
+            ProductoId = m.ProductoId,
+            ProductoNombre = m.Producto != null ? m.Producto.Nombre : null,
+            ProveedorId = m.ProveedorId,
+            ProveedorNombre = m.Proveedor != null ? m.Proveedor.Nombre : null,
             Tipo = m.Tipo,
             Cantidad = m.Cantidad,
             Razon = m.Razon,
