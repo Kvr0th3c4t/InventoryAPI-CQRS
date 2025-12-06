@@ -153,25 +153,73 @@ public class MovimientoStockRepository : IMovimientoStockRepository
                         .CountAsync();
     }
 
-    public async Task<PagedResponse<MovimientoStockResponseDto>> GetAllPaginated(int page, int pageSize)
+    public async Task<PagedResponse<MovimientoStockResponseDto>> GetAllPaginated(
+    DateTimeOffset? fechaDesde,
+    DateTimeOffset? fechaHasta,
+    TipoMovimiento? tipo,
+    int? productoId,
+    string orderBy,
+    string order,
+    int page,
+    int pageSize)
     {
-        var totalCount = await _context.MovimientosStock.CountAsync();
-
-        var movimientosStock = await _context.MovimientosStock
+        var query = _context.MovimientosStock
             .Include(m => m.Producto)
-            .Include(m => m.Proveedor)
-            .OrderBy(m => m.Id)
+            .Include(p => p.Proveedor)
+            .AsQueryable();
+
+        if (fechaDesde.HasValue)
+        {
+            query = query.Where(m => m.FechaMovimiento >= fechaDesde.Value);
+        }
+
+        if (fechaHasta.HasValue)
+        {
+            query = query.Where(m => m.FechaMovimiento <= fechaHasta.Value);
+        }
+
+        if (tipo.HasValue)
+        {
+            query = query.Where(m => m.Tipo == tipo.Value);
+        }
+
+        if (productoId.HasValue)
+        {
+            query = query.Where(m => m.ProductoId == productoId.Value);
+        }
+
+        var totalCount = await query.CountAsync();
+
+        query = orderBy switch
+        {
+            "cantidad" => order == "desc"
+                ? query.OrderByDescending(m => m.Cantidad)
+                : query.OrderBy(m => m.Cantidad),
+            "tipo" => order == "desc"
+                ? query.OrderByDescending(m => m.Tipo)
+                : query.OrderBy(m => m.Tipo),
+            "producto" => order == "desc"
+                ? query.OrderByDescending(m => m.Producto.Nombre)
+                : query.OrderBy(m => m.Producto.Nombre),
+            _ => order == "desc"
+                ? query.OrderByDescending(m => m.FechaMovimiento)
+                : query.OrderBy(m => m.FechaMovimiento)
+        };
+
+        // 5. Paginar
+        var movimientos = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
-        var items = movimientosStock.Select(m => new MovimientoStockResponseDto
+        // 6. Mapear a DTOs
+        var items = movimientos.Select(m => new MovimientoStockResponseDto
         {
             Id = m.Id,
             ProductoId = m.ProductoId,
-            ProductoNombre = m.Producto != null ? m.Producto.Nombre : null,
-            ProveedorId = m.ProveedorId,
-            ProveedorNombre = m.Proveedor != null ? m.Proveedor.Nombre : null,
+            ProductoNombre = m.Producto.Nombre,
+            ProveedorId = m.Producto.ProveedorId,
+            ProveedorNombre = m.Producto.Proveedor?.Nombre,
             Tipo = m.Tipo,
             Cantidad = m.Cantidad,
             Razon = m.Razon,

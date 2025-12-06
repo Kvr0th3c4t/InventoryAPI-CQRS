@@ -5,28 +5,44 @@ using MediatR;
 
 namespace InventoryAPI.Features.MovimientosStock.Queries.GetAllMovimientos;
 
-public class GetAllMovimientosQueryHandler : IRequestHandler<GetAllMovimientosQuery, PagedResponse<MovimientoStockResponseDto>>
+public class GetAllMovimientosStockQueryHandler
+    : IRequestHandler<GetAllMovimientosQuery, PagedResponse<MovimientoStockResponseDto>>
 {
-    private readonly IMovimientoStockRepository _movimientosRepository;
-    private readonly IProductoRepository _productoRepository;
-    private readonly IProveedorRepository _proveedorRepository;
+    private readonly IMovimientoStockRepository _movimientoStockRepository;
 
-    public GetAllMovimientosQueryHandler(
-        IMovimientoStockRepository movimientosRepository,
-        IProductoRepository productoRepository,
-        IProveedorRepository proveedorRepository)
+    public GetAllMovimientosStockQueryHandler(IMovimientoStockRepository movimientoStockRepository)
     {
-        _movimientosRepository = movimientosRepository;
-        _productoRepository = productoRepository;
-        _proveedorRepository = proveedorRepository;
+        _movimientoStockRepository = movimientoStockRepository;
     }
 
-    public async Task<PagedResponse<MovimientoStockResponseDto>> Handle(GetAllMovimientosQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<MovimientoStockResponseDto>> Handle(
+        GetAllMovimientosQuery request,
+        CancellationToken cancellationToken)
     {
+        // Validar paginación
         var page = request.Page < 1 ? 1 : request.Page;
         var pageSize = request.PageSize < 1 ? 10 :
                        request.PageSize > 100 ? 100 : request.PageSize;
 
-        return await _movimientosRepository.GetAllPaginated(page, pageSize);
+        // Validar ordenamiento
+        var validOrderByFields = new[] { "fecha", "cantidad", "tipo", "producto" };
+        var orderBy = !string.IsNullOrWhiteSpace(request.OrderBy) &&
+                      validOrderByFields.Contains(request.OrderBy.ToLower())
+            ? request.OrderBy.ToLower()
+            : "fecha";
+
+        var order = request.Order?.ToLower() == "asc" ? "asc" : "desc";
+
+        // Llamar al repository con todos los filtros
+        return await _movimientoStockRepository.GetAllPaginated(
+            fechaDesde: request.FechaDesde,
+            fechaHasta: request.FechaHasta,
+            tipo: request.Tipo,
+            productoId: request.ProductoId,
+            orderBy: orderBy,
+            order: order,
+            page: page,
+            pageSize: pageSize
+        );
     }
 }

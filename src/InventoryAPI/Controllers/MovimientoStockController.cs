@@ -5,6 +5,7 @@ using InventoryAPI.Features.MovimientosStock.Queries.GetAllMovimientos;
 using InventoryAPI.Features.MovimientosStock.Queries.GetMovimientoById;
 using InventoryAPI.Features.MovimientosStock.Commands.CreateMovimiento;
 using FluentValidation;
+using InventoryAPI.Enums;
 
 namespace InventoryAPI.Controllers;
 
@@ -21,10 +22,26 @@ public class MovimientosStockController : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetAll(
+    [FromQuery] DateTimeOffset? fechaDesde = null,
+    [FromQuery] DateTimeOffset? fechaHasta = null,
+    [FromQuery] TipoMovimiento? tipo = null,
+    [FromQuery] int? productoId = null,
+    [FromQuery] string? orderBy = null,
+    [FromQuery] string? order = null,
     [FromQuery] int page = 1,
     [FromQuery] int pageSize = 10)
     {
-        var query = new GetAllMovimientosQuery(page, pageSize);
+        var query = new GetAllMovimientosQuery(
+            FechaDesde: fechaDesde,
+            FechaHasta: fechaHasta,
+            Tipo: tipo,
+            ProductoId: productoId,
+            OrderBy: orderBy,
+            Order: order,
+            Page: page,
+            PageSize: pageSize
+        );
+
         var result = await _mediator.Send(query);
         return Ok(result);
     }

@@ -224,14 +224,80 @@ public class ProductoRepository : IProductoRepository
         return producto;
     }
 
-    public async Task<PagedResponse<ProductoResponseDto>> GetAllPaginated(int page, int pageSize)
+    public async Task<PagedResponse<ProductoResponseDto>> GetAllPaginated(
+    string? search,
+    int? categoriaId,
+    int? proveedorId,
+    decimal? precioMin,
+    decimal? precioMax,
+    bool stockBajo,
+    string orderBy,
+    string order,
+    int page,
+    int pageSize)
     {
-        var totalCount = await _context.Productos.CountAsync();
-
-        var productos = await _context.Productos
+        var query = _context.Productos
             .Include(p => p.Categoria)
             .Include(p => p.Proveedor)
-            .OrderBy(p => p.Id)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(p =>
+                p.Nombre.Contains(search) ||
+                p.Descripcion.Contains(search) ||
+                p.SKU.Contains(search));
+        }
+
+        if (categoriaId.HasValue)
+        {
+            query = query.Where(p => p.CategoriaId == categoriaId.Value);
+        }
+
+        if (proveedorId.HasValue)
+        {
+            query = query.Where(p => p.ProveedorId == proveedorId.Value);
+        }
+
+        if (precioMin.HasValue)
+        {
+            query = query.Where(p => p.Precio >= precioMin.Value);
+        }
+
+        if (precioMax.HasValue)
+        {
+            query = query.Where(p => p.Precio <= precioMax.Value);
+        }
+
+        if (stockBajo)
+        {
+            query = query.Where(p => p.StockActual < p.StockMinimo);
+        }
+
+        var totalCount = await query.CountAsync();
+
+        query = orderBy switch
+        {
+            "precio" => order == "desc"
+                ? query.OrderByDescending(p => p.Precio)
+                : query.OrderBy(p => p.Precio),
+            "stock" => order == "desc"
+                ? query.OrderByDescending(p => p.StockActual)
+                : query.OrderBy(p => p.StockActual),
+            "categoria" => order == "desc"
+                ? query.OrderByDescending(p => p.Categoria.Nombre)
+                : query.OrderBy(p => p.Categoria.Nombre),
+            "proveedor" => order == "desc"
+                ? query.OrderByDescending(p => p.Proveedor == null ? 1 : 0)
+                       .ThenByDescending(p => p.Proveedor.Nombre)
+                : query.OrderBy(p => p.Proveedor == null ? 1 : 0)
+                       .ThenBy(p => p.Proveedor.Nombre),
+            _ => order == "desc"
+                ? query.OrderByDescending(p => p.Nombre)
+                : query.OrderBy(p => p.Nombre)
+        };
+
+        var productos = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -245,7 +311,9 @@ public class ProductoRepository : IProductoRepository
             CategoriaId = p.CategoriaId,
             CategoriaNombre = p.Categoria?.Nombre ?? string.Empty,
             StockActual = p.StockActual,
-            Precio = p.Precio
+            Precio = p.Precio,
+            ProveedorId = p.ProveedorId,
+            ProveedorNombre = p.Proveedor?.Nombre
         }).ToList();
 
         return new PagedResponse<ProductoResponseDto>(items, totalCount, page, pageSize);

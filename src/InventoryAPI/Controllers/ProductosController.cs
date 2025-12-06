@@ -6,7 +6,6 @@ using InventoryAPI.Features.Productos.Queries.GetProductoById;
 using InventoryAPI.Features.Productos.Queries.GetAllProductos;
 using InventoryAPI.Features.Productos.DeleteProducto;
 using InventoryAPI.Features.Productos.Commands.UpdateProducto;
-using InventoryAPI.Dtos.Pagination;
 
 namespace InventoryAPI.Controllers;
 
@@ -23,10 +22,30 @@ public class ProductosController : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetAll(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+     [FromQuery] string? search = null,
+     [FromQuery] int? categoriaId = null,
+     [FromQuery] int? proveedorId = null,
+     [FromQuery] decimal? precioMin = null,
+     [FromQuery] decimal? precioMax = null,
+     [FromQuery] bool? stockBajo = null,
+     [FromQuery] string? orderBy = null,
+     [FromQuery] string? order = null,
+     [FromQuery] int page = 1,
+     [FromQuery] int pageSize = 10)
     {
-        var query = new GetAllProductosQuery(page, pageSize);
+        var query = new GetAllProductosQuery(
+            Search: search,
+            CategoriaId: categoriaId,
+            ProveedorId: proveedorId,
+            PrecioMin: precioMin,
+            PrecioMax: precioMax,
+            StockBajo: stockBajo,
+            OrderBy: orderBy,
+            Order: order,
+            Page: page,
+            PageSize: pageSize
+        );
+
         var result = await _mediator.Send(query);
         return Ok(result);
     }

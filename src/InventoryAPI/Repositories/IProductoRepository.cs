@@ -20,5 +20,15 @@ public interface IProductoRepository : IGenericRepository<Producto>
     Task<decimal> GetPrecioMasAltoAsync();
     Task<decimal> GetPrecioMasBajoAsync();
     Task<int> GetProductosUltimos30DiasAsync();
-    Task<PagedResponse<ProductoResponseDto>> GetAllPaginated(int page, int pageSize);
+    Task<PagedResponse<ProductoResponseDto>> GetAllPaginated(
+    string? search,
+    int? categoriaId,
+    int? proveedorId,
+    decimal? precioMin,
+    decimal? precioMax,
+    bool stockBajo,
+    string orderBy,
+    string order,
+    int page,
+    int pageSize);
 }
