@@ -99,19 +99,23 @@ public class ProductoStatController : ControllerBase
     }
 
     [HttpGet("distribucion-por-categoria")]
-
-    public async Task<IActionResult> GetProductosPorCategoria()
+    public async Task<IActionResult> GetProductosPorCategoria(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
     {
-        var query = new GetProductosPorCategoriaQuery();
+        var query = new GetProductosPorCategoriaQuery(pageNumber, pageSize);
         var result = await _mediator.Send(query);
         return Ok(result);
     }
 
     [HttpGet("distribucion-por-proveedor")]
 
-    public async Task<IActionResult> GetProductosPorProveedor()
+    public async Task<IActionResult> GetProductosPorProveedor(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10
+    )
     {
-        var query = new GetProductosPorProveedorQuery();
+        var query = new GetProductosPorProveedorQuery(pageNumber, pageSize);
         var result = await _mediator.Send(query);
         return Ok(result);
     }

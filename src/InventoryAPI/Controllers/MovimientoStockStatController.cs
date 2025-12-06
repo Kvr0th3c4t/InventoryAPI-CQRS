@@ -38,10 +38,14 @@ public class MovimientoStockStatController : ControllerBase
         var result = await _mediator.Send(query);
         return Ok(result);
     }
+
     [HttpGet("movimientos-por-dia")]
-    public async Task<IActionResult> GetMovimientosPorDia()
+    public async Task<IActionResult> GetMovimientosPorDia(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10
+    )
     {
-        var query = new GetMovimientosPorDiaQuery();
+        var query = new GetMovimientosPorDiaQuery(pageNumber, pageSize);
         var result = await _mediator.Send(query);
         return Ok(result);
     }
@@ -55,17 +59,23 @@ public class MovimientoStockStatController : ControllerBase
     }
 
     [HttpGet("tipo-movimientos")]
-    public async Task<IActionResult> GetTipoMovimientos()
+    public async Task<IActionResult> GetTipoMovimientos(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10
+    )
     {
-        var query = new GetTipoMovimientosQuery();
+        var query = new GetTipoMovimientosQuery(pageNumber, pageSize);
         var result = await _mediator.Send(query);
         return Ok(result);
     }
 
     [HttpGet("movimientos-por-proveedor")]
-    public async Task<IActionResult> GetMovimientosPorProveedor()
+    public async Task<IActionResult> GetMovimientosPorProveedor(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10
+    )
     {
-        var query = new GetMovimientosPorProveedorQuery();
+        var query = new GetMovimientosPorProveedorQuery(pageNumber, pageSize);
         var result = await _mediator.Send(query);
         return Ok(result);
     }

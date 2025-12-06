@@ -8,7 +8,8 @@ namespace InventoryAPI.Repositories;
 public interface ICategoriaRepository : IGenericRepository<Categoria>
 {
     Task<int> GetTotalCategoriasAsync();
-    Task<List<DistribucionCategoriaDto>> GetDistribucionProductosPorCategoriaAsync();
+    Task<PagedResponse<DistribucionCategoriaDto>> GetDistribucionProductosPorCategoriaAsync(int pageNumber,
+    int pageSize);
     Task<CategoriaResponseDto?> GetCategoriaConMasProductosAsync();
     Task<CategoriaResponseDto?> GetCategoriaConMayorValorAsync();
     Task<PagedResponse<CategoriaResponseDto>> GetAllPaginated(int page, int pageSize);

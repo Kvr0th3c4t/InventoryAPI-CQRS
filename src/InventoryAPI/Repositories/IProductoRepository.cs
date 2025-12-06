@@ -11,8 +11,8 @@ public interface IProductoRepository : IGenericRepository<Producto>
     Task<int> GetProductosStockBajoAsync();
     Task<int> GetProductosSinStockAsync();
     Task<decimal> GetValorTotalInventarioAsync();
-    Task<List<DistribucionCategoriaDto>> GetProductosPorCategoriaAsync();
-    Task<List<DistribucionProveedorDto>> GetProductosPorProveedorAsync();
+    Task<PagedResponse<DistribucionCategoriaDto>> GetProductosPorCategoriaAsync(int pageNumber, int pageSize);
+    Task<PagedResponse<DistribucionProveedorDto>> GetProductosPorProveedorAsync(int pageNumber, int pageSize);
     Task<List<ProductoResponseDto>> GetTop5MasValiososAsync();
     Task<List<ProductoResponseDto>> GetTop5MasStockAsync();
     Task<List<ProductoResponseDto>> GetTop5MenosStockAsync();

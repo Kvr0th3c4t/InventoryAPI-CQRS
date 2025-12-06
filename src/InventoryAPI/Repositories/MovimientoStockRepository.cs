@@ -26,14 +26,6 @@ public class MovimientoStockRepository : IMovimientoStockRepository
         return movimiento;
     }
 
-    public async Task<List<MovimientoStock>> GetAll()
-    {
-        return await _context.MovimientosStock
-            .Include(m => m.Producto)
-            .Include(m => m.Proveedor)
-            .ToListAsync();
-    }
-
     public async Task<MovimientoStock?> GetById(int id)
     {
         return await _context.MovimientosStock
@@ -59,23 +51,34 @@ public class MovimientoStockRepository : IMovimientoStockRepository
         };
     }
 
-    public Task<List<MovimientoPorDiaDto>> GetMovimientosPorDiaAsync()
+    public async Task<PagedResponse<MovimientoPorDiaDto>> GetMovimientosPorDiaAsync(
+        int pageNumber, int pageSize
+    )
     {
-        return _context.MovimientosStock
+        var query = _context.MovimientosStock
                         .AsNoTracking()
                         .GroupBy(m => m.FechaMovimiento.Date)
                         .Select(g => new MovimientoPorDiaDto
                         {
                             Fecha = g.Key,
                             TotalMovimientos = g.Count()
-                        })
-                        .ToListAsync();
+                        });
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResponse<MovimientoPorDiaDto>(items, totalCount, pageNumber, pageSize);
     }
 
-    public Task<List<MovimientoPorProveedorDto>> GetMovimientosPorProveedorAsync()
+    public async Task<PagedResponse<MovimientoPorProveedorDto>> GetMovimientosPorProveedorAsync(
+        int pageNumber, int pageSize
+    )
     {
 
-        return _context.MovimientosStock
+        var query = _context.MovimientosStock
                         .Include(m => m.Proveedor)
                         .Where(m => m.ProveedorId != null)
                         .AsNoTracking()
@@ -84,8 +87,16 @@ public class MovimientoStockRepository : IMovimientoStockRepository
                         {
                             NombreProveedor = g.Key.Nombre,
                             TotalMovimientos = g.Count()
-                        })
-                        .ToListAsync();
+                        });
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResponse<MovimientoPorProveedorDto>(items, totalCount, pageNumber, pageSize);
     }
 
     public Task<ProductoResponseDto?> GetProductoConMasAjustesAsync()
@@ -130,17 +141,27 @@ public class MovimientoStockRepository : IMovimientoStockRepository
                         .ToListAsync();
     }
 
-    public Task<List<TipoMovimientoDto>> GetTipoMovimientosAsync()
+    public async Task<PagedResponse<TipoMovimientoDto>> GetTipoMovimientosAsync(
+        int pageNumber, int pageSize
+    )
     {
-        return _context.MovimientosStock
+        var query = _context.MovimientosStock
                         .AsNoTracking()
                         .GroupBy(m => m.Tipo)
                         .Select(g => new TipoMovimientoDto
                         {
                             TipoMovimiento = g.Key.ToString(),
                             Cantidad = g.Count()
-                        })
-                        .ToListAsync();
+                        });
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResponse<TipoMovimientoDto>(items, totalCount, pageNumber, pageSize);
     }
 
     public Task<int> GetTotalMovimientosUltimos30DiasAsync()
@@ -152,6 +173,13 @@ public class MovimientoStockRepository : IMovimientoStockRepository
                         .Where(m => m.FechaMovimiento >= fechaLimite)
                         .CountAsync();
     }
+
+    public async Task<bool> ExistsMovimientosByProveedorAsync(int proveedorId)
+    {
+        return await _context.MovimientosStock
+            .AnyAsync(m => m.ProveedorId == proveedorId);
+    }
+
     public async Task<PagedResponse<MovimientoStockResponseDto>> GetAllPaginated(
         DateTimeOffset? fechaDesde,
         DateTimeOffset? fechaHasta,

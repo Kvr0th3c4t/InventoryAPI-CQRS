@@ -37,11 +37,6 @@ public class CategoriaRepository : ICategoriaRepository
         return true;
     }
 
-    public async Task<List<Categoria>> GetAll()
-    {
-        return await _context.Categorias.ToListAsync();
-    }
-
     public async Task<Categoria?> GetById(int id)
     {
         return await _context.Categorias.FirstOrDefaultAsync(c => c.Id == id);
@@ -81,19 +76,28 @@ public class CategoriaRepository : ICategoriaRepository
                     .FirstOrDefaultAsync();
     }
 
-    public Task<List<DistribucionCategoriaDto>> GetDistribucionProductosPorCategoriaAsync()
+    public async Task<PagedResponse<DistribucionCategoriaDto>> GetDistribucionProductosPorCategoriaAsync(
+     int pageNumber,
+     int pageSize)
     {
-        return _context.Productos
-                        .AsNoTracking()
-                        .GroupBy(p => p.Categoria)
-                        .Select(g => new DistribucionCategoriaDto
-                        {
-                            NombreCategoria = g.Key!.Nombre,
-                            CantidadProductos = g.Count(),
-                            ValorTotal = g.Sum(p => p.Precio * p.StockActual)
+        var query = _context.Productos
+            .AsNoTracking()
+            .GroupBy(p => p.Categoria)
+            .Select(g => new DistribucionCategoriaDto
+            {
+                NombreCategoria = g.Key!.Nombre,
+                CantidadProductos = g.Count(),
+                ValorTotal = g.Sum(p => p.Precio * p.StockActual)
+            });
 
-                        })
-                        .ToListAsync();
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResponse<DistribucionCategoriaDto>(items, totalCount, pageNumber, pageSize);
     }
 
     public Task<int> GetTotalCategoriasAsync()

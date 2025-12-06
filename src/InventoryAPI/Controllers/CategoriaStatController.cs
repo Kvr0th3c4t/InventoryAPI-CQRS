@@ -1,3 +1,4 @@
+using Azure;
 using InventoryAPI.Features.Stats.CategoriaStats.Queries.GetCategoriaConMasProductos;
 using InventoryAPI.Features.Stats.CategoriaStats.Queries.GetCategoriaConMayorValor;
 using InventoryAPI.Features.Stats.CategoriaStats.Queries.GetDistribucionProductosPorCategoria;
@@ -29,10 +30,16 @@ public class CategoriaStatController : ControllerBase
     }
 
     [HttpGet("distribucion-productos-por-categoria")]
-
-    public async Task<IActionResult> GetDistribucionProductosPorCategoria()
+    public async Task<IActionResult> GetDistribucionProductosPorCategoria(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
     {
-        var query = new GetDistribucionProductosPorCategoriaQuery();
+        var query = new GetDistribucionProductosPorCategoriaQuery
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
         var result = await _mediator.Send(query);
         return Ok(result);
     }

@@ -25,10 +25,10 @@ public class CategoriaController : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetAll(
-    [FromQuery] int page = 1,
+    [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10)
     {
-        var query = new GetAllCategoriasQuery(page, pageSize);
+        var query = new GetAllCategoriasQuery(pageNumber, pageSize);
         var result = await _mediator.Send(query);
         return Ok(result);
     }

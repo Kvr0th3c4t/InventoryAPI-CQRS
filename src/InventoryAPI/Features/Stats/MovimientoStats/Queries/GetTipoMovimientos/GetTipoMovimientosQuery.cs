@@ -1,6 +1,7 @@
+using InventoryAPI.Dtos.Pagination;
 using InventoryAPI.Dtos.StatsDtos.MovimientosStatsDto;
 using MediatR;
 
 namespace InventoryAPI.Features.Stats.MovimientoStats.Queries.GetTipoMovimientos;
 
-public record GetTipoMovimientosQuery : IRequest<IEnumerable<TipoMovimientoDto>>;
+public record GetTipoMovimientosQuery(int PageNumber = 1, int PageSize = 10) : IRequest<PagedResponse<TipoMovimientoDto>>;

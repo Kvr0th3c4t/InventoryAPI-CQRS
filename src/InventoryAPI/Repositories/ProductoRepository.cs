@@ -74,24 +74,33 @@ public class ProductoRepository : IProductoRepository
                         .AverageAsync(p => p.Precio);
     }
 
-    public Task<List<DistribucionCategoriaDto>> GetProductosPorCategoriaAsync()
+    public async Task<PagedResponse<DistribucionCategoriaDto>> GetProductosPorCategoriaAsync(
+    int pageNumber,
+    int pageSize)
     {
-        return _context.Productos
-                        .AsNoTracking()
-                        .GroupBy(p => p.Categoria)
-                        .Select(g => new DistribucionCategoriaDto
-                        {
-                            NombreCategoria = g.Key!.Nombre,
-                            CantidadProductos = g.Count(),
-                            ValorTotal = g.Sum(p => p.Precio * p.StockActual)
+        var query = _context.Productos
+            .AsNoTracking()
+            .GroupBy(p => p.Categoria)
+            .Select(g => new DistribucionCategoriaDto
+            {
+                NombreCategoria = g.Key!.Nombre,
+                CantidadProductos = g.Count(),
+                ValorTotal = g.Sum(p => p.Precio * p.StockActual)
+            });
 
-                        })
-                        .ToListAsync();
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResponse<DistribucionCategoriaDto>(items, totalCount, pageNumber, pageSize);
     }
 
-    public Task<List<DistribucionProveedorDto>> GetProductosPorProveedorAsync()
+    public async Task<PagedResponse<DistribucionProveedorDto>> GetProductosPorProveedorAsync(int pageNumber, int pageSize)
     {
-        return _context.Productos
+        var query = _context.Productos
                         .AsNoTracking()
                         .Include(p => p.Proveedor)
                         .Where(p => p.ProveedorId != null)
@@ -100,8 +109,16 @@ public class ProductoRepository : IProductoRepository
                         {
                             NombreProveedor = pr.Key!.Nombre,
                             CantidadProductos = pr.Count()
-                        })
-                        .ToListAsync();
+                        });
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResponse<DistribucionProveedorDto>(items, totalCount, pageNumber, pageSize);
     }
 
     public Task<int> GetProductosSinStockAsync()
@@ -318,4 +335,7 @@ public class ProductoRepository : IProductoRepository
 
         return new PagedResponse<ProductoResponseDto>(items, totalCount, page, pageSize);
     }
+
+
+
 }

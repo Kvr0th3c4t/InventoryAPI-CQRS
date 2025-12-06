@@ -38,19 +38,17 @@ public class ProveedorRepository : IProveedorRepository
         return true;
     }
 
-    public async Task<List<Proveedor>> GetAll()
-    {
-        return await _context.Proveedores.ToListAsync();
-    }
-
     public async Task<Proveedor?> GetById(int id)
     {
         return await _context.Proveedores.FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public Task<List<DistribucionProveedorDto>> GetProductosPorProveedorAsync()
+    public async Task<PagedResponse<DistribucionProveedorDto>> GetProductosPorProveedorAsync(
+        int pageNumber,
+        int pageSize
+    )
     {
-        return _context.Productos
+        var query = _context.Productos
                          .Include(p => p.Proveedor)
                          .AsNoTracking()
                          .Where(p => p.ProveedorId != null)
@@ -59,8 +57,16 @@ public class ProveedorRepository : IProveedorRepository
                          {
                              NombreProveedor = g.Key!.Nombre,
                              CantidadProductos = g.Count()
-                         })
-                         .ToListAsync();
+                         });
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResponse<DistribucionProveedorDto>(items, totalCount, pageNumber, pageSize);
     }
 
     public Task<ProveedorResponseDto?> GetProveedorMasActivoAsync()
@@ -83,9 +89,11 @@ public class ProveedorRepository : IProveedorRepository
         return _context.Proveedores.CountAsync();
     }
 
-    public Task<List<DistribucionValorProveedorDto>> GetValorInventarioPorProveedorAsync()
+    public async Task<PagedResponse<DistribucionValorProveedorDto>> GetValorInventarioPorProveedorAsync(
+        int pageNumber, int pageSize
+    )
     {
-        return _context.Productos
+        var query = _context.Productos
                          .Include(p => p.Proveedor)
                          .AsNoTracking()
                          .Where(p => p.ProveedorId != null)
@@ -94,8 +102,17 @@ public class ProveedorRepository : IProveedorRepository
                          {
                              NombreProveedor = g.Key!.Nombre,
                              ValorTotal = g.Sum(p => p.Precio * p.StockActual)
-                         })
-                         .ToListAsync();
+                         });
+
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResponse<DistribucionValorProveedorDto>(items, totalCount, pageNumber, pageSize);
     }
 
 

@@ -1,10 +1,11 @@
+using InventoryAPI.Dtos.Pagination;
 using InventoryAPI.Dtos.StatsDtos.ProveedoresStatsDto;
 using InventoryAPI.Repositories;
 using MediatR;
 
 namespace InventoryAPI.Features.Stats.ProveedorStats.Queries.GetValorInventarioPorProveedor;
 
-public class GetValorInventarioPorProveedorQueryHandler : IRequestHandler<GetValorInventarioPorProveedorQuery, IEnumerable<DistribucionValorProveedorDto>>
+public class GetValorInventarioPorProveedorQueryHandler : IRequestHandler<GetValorInventarioPorProveedorQuery, PagedResponse<DistribucionValorProveedorDto>>
 {
     private readonly IProveedorRepository _proveedorRepository;
     public GetValorInventarioPorProveedorQueryHandler(IProveedorRepository proveedorRepository)
@@ -12,8 +13,13 @@ public class GetValorInventarioPorProveedorQueryHandler : IRequestHandler<GetVal
         _proveedorRepository = proveedorRepository;
     }
 
-    public async Task<IEnumerable<DistribucionValorProveedorDto>> Handle(GetValorInventarioPorProveedorQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<DistribucionValorProveedorDto>> Handle(GetValorInventarioPorProveedorQuery request, CancellationToken cancellationToken)
     {
-        return await _proveedorRepository.GetValorInventarioPorProveedorAsync();
+
+        var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
+        var pageSize = request.PageSize < 1 ? 10 :
+                       request.PageSize > 100 ? 100 : request.PageSize;
+
+        return await _proveedorRepository.GetValorInventarioPorProveedorAsync(pageNumber, pageSize);
     }
 }

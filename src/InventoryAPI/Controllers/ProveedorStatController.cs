@@ -30,9 +30,12 @@ public class ProveedorStatController : ControllerBase
 
 
     [HttpGet("productos-por-proveedor")]
-    public async Task<IActionResult> GetProductosPorProveedor()
+    public async Task<IActionResult> GetProductosPorProveedor(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10
+    )
     {
-        var query = new GetProductosPorProveedorQuery();
+        var query = new GetProductosPorProveedorQuery(pageNumber, pageSize);
         var result = await _mediator.Send(query);
         return Ok(result);
     }
@@ -46,9 +49,12 @@ public class ProveedorStatController : ControllerBase
     }
 
     [HttpGet("valor-inventario-por-proveedor")]
-    public async Task<IActionResult> GetValorInventarioPorProveedor()
+    public async Task<IActionResult> GetValorInventarioPorProveedor(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10
+    )
     {
-        var query = new GetValorInventarioPorProveedorQuery();
+        var query = new GetValorInventarioPorProveedorQuery(pageNumber, pageSize);
         var result = await _mediator.Send(query);
         return Ok(result);
     }

@@ -10,8 +10,8 @@ public interface IProveedorRepository : IGenericRepository<Proveedor>
 {
 
     Task<int> GetTotalProveedoresAsync();
-    Task<List<DistribucionProveedorDto>> GetProductosPorProveedorAsync();
+    Task<PagedResponse<DistribucionProveedorDto>> GetProductosPorProveedorAsync(int pageNumber, int pageSize);
     Task<ProveedorResponseDto?> GetProveedorMasActivoAsync();
-    Task<List<DistribucionValorProveedorDto>> GetValorInventarioPorProveedorAsync();
+    Task<PagedResponse<DistribucionValorProveedorDto>> GetValorInventarioPorProveedorAsync(int pageNumber, int pageSize);
     Task<PagedResponse<ProveedorResponseDto>> GetAllPaginated(int page, int pageSize);
 }
