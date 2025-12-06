@@ -19,13 +19,5 @@ public interface IMovimientoStockRepository
     Task<List<TipoMovimientoDto>> GetTipoMovimientosAsync();
     Task<List<MovimientoPorProveedorDto>> GetMovimientosPorProveedorAsync();
     Task<ProductoResponseDto?> GetProductoConMasAjustesAsync();
-    Task<PagedResponse<MovimientoStockResponseDto>> GetAllPaginated(
-    DateTimeOffset? fechaDesde,
-    DateTimeOffset? fechaHasta,
-    TipoMovimiento? tipo,
-    int? productoId,
-    string orderBy,
-    string order,
-    int page,
-    int pageSize);
+    Task<PagedResponse<MovimientoStockResponseDto>> GetAllPaginated(DateTimeOffset? fechaDesde, DateTimeOffset? fechaHasta, TipoMovimiento? tipo, int? productoId, string orderBy, string order, int page, int pageSize);
 }

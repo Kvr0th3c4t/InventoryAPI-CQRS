@@ -152,16 +152,15 @@ public class MovimientoStockRepository : IMovimientoStockRepository
                         .Where(m => m.FechaMovimiento >= fechaLimite)
                         .CountAsync();
     }
-
     public async Task<PagedResponse<MovimientoStockResponseDto>> GetAllPaginated(
-    DateTimeOffset? fechaDesde,
-    DateTimeOffset? fechaHasta,
-    TipoMovimiento? tipo,
-    int? productoId,
-    string orderBy,
-    string order,
-    int page,
-    int pageSize)
+        DateTimeOffset? fechaDesde,
+        DateTimeOffset? fechaHasta,
+        TipoMovimiento? tipo,
+        int? productoId,
+        string orderBy,
+        string order,
+        int page,
+        int pageSize)
     {
         var query = _context.MovimientosStock
             .Include(m => m.Producto)
