@@ -206,13 +206,11 @@ public class MovimientoStockRepository : IMovimientoStockRepository
                 : query.OrderBy(m => m.FechaMovimiento)
         };
 
-        // 5. Paginar
         var movimientos = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
-        // 6. Mapear a DTOs
         var items = movimientos.Select(m => new MovimientoStockResponseDto
         {
             Id = m.Id,
