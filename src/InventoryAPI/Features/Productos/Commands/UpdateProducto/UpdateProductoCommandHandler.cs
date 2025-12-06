@@ -82,7 +82,9 @@ public class UpdateProductoCommandHandler : IRequestHandler<UpdateProductoComman
             CategoriaId = productoActualizado.CategoriaId,
             CategoriaNombre = categoria?.Nombre ?? string.Empty,
             StockActual = productoActualizado.StockActual,
-            Precio = productoActualizado.Precio
+            Precio = productoActualizado.Precio,
+            ProveedorId = productoActualizado.ProveedorId,
+            ProveedorNombre = productoActualizado.Proveedor?.Nombre
         };
 
         return response;

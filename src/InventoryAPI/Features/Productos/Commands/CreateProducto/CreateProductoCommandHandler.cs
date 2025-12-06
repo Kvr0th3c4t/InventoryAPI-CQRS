@@ -64,7 +64,9 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
             CategoriaId = productoCreado.CategoriaId,
             CategoriaNombre = categoriaBuscada.Nombre,
             StockActual = productoCreado.StockActual,
-            Precio = productoCreado.Precio
+            Precio = productoCreado.Precio,
+            ProveedorId = productoCreado.ProveedorId,
+            ProveedorNombre = productoCreado.Proveedor?.Nombre
         };
 
         return response;

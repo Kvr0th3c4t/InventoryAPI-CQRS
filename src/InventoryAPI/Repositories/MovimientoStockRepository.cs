@@ -106,7 +106,9 @@ public class MovimientoStockRepository : IMovimientoStockRepository
                             CategoriaId = g.Key.CategoriaId,
                             CategoriaNombre = g.Key.Categoria.Nombre,
                             StockActual = g.Key.StockActual,
-                            Precio = g.Key.Precio
+                            Precio = g.Key.Precio,
+                            ProveedorId = g.Key.ProveedorId,
+                            ProveedorNombre = g.Key.Proveedor.Nombre
                         })
                         .FirstOrDefaultAsync();
     }

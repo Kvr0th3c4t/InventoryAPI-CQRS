@@ -24,7 +24,6 @@ public class MovimientoStockStatController : ControllerBase
     }
 
     [HttpGet("total-movimientos-ultimos-30-dias")]
-
     public async Task<IActionResult> GetTotalMovimientosUltimos30Dias()
     {
         var query = new GetTotalMovimientosUltimos30DiasQuery();

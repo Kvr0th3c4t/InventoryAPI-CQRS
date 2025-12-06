@@ -32,7 +32,9 @@ public class GetProductoByIdQueryHandler : IRequestHandler<GetProductoByIdQuery,
             CategoriaId = producto.CategoriaId,
             CategoriaNombre = producto.Categoria.Nombre,
             StockActual = producto.StockActual,
-            Precio = producto.Precio
+            Precio = producto.Precio,
+            ProveedorId = producto.ProveedorId,
+            ProveedorNombre = producto.Proveedor?.Nombre
         };
 
         return response;

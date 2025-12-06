@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using InventoryAPI.Dtos.CategoriaDtos;
 using InventoryAPI.Dtos.ProductoDtos;
+using InventoryAPI.Dtos.Pagination;
 using InventoryAPI.IntegrationTests.Infrastructure;
 
 namespace InventoryAPI.IntegrationTests.Tests.Productos;
@@ -92,8 +93,9 @@ public class ProductoTests : IntegrationTestsBase
         // Then
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var productos = await response.Content.ReadFromJsonAsync<List<ProductoResponseDto>>();
-        productos.Should().NotBeNull();
+        var pagedResult = await response.Content.ReadFromJsonAsync<PagedResponse<ProductoResponseDto>>();
+        pagedResult.Should().NotBeNull();
+        var productos = pagedResult!.Items;
         productos.Should().HaveCount(2);
     }
 

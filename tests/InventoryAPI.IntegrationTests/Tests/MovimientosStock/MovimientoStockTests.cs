@@ -5,6 +5,7 @@ using InventoryAPI.Dtos.CategoriaDtos;
 using InventoryAPI.Dtos.MovimientoStockDtos;
 using InventoryAPI.Dtos.ProductoDtos;
 using InventoryAPI.Dtos.ProveedorDtos;
+using InventoryAPI.Dtos.Pagination;
 using InventoryAPI.IntegrationTests.Infrastructure;
 
 namespace InventoryAPI.IntegrationTests.Tests.MovimientosStock;
@@ -199,8 +200,9 @@ public class MovimientoStockTests : IntegrationTestsBase
         // Then
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var movimientos = await response.Content.ReadFromJsonAsync<List<MovimientoStockResponseDto>>();
-        movimientos.Should().NotBeNull();
+        var pagedResult = await response.Content.ReadFromJsonAsync<PagedResponse<MovimientoStockResponseDto>>();
+        pagedResult.Should().NotBeNull();
+        var movimientos = pagedResult!.Items;
         movimientos.Should().HaveCount(2);
     }
 

@@ -41,6 +41,7 @@ public class ProductoRepository : IProductoRepository
     {
         return await _context.Productos
             .Include(p => p.Categoria)
+            .Include(p => p.Proveedor)
             .ToListAsync();
     }
 
@@ -48,6 +49,7 @@ public class ProductoRepository : IProductoRepository
     {
         return await _context.Productos
             .Include(p => p.Categoria)
+            .Include(p => p.Proveedor)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
@@ -128,6 +130,7 @@ public class ProductoRepository : IProductoRepository
     public Task<List<ProductoResponseDto>> GetTop5MasStockAsync()
     {
         return _context.Productos
+                        .Include(p => p.Proveedor)
                        .AsNoTracking()
                        .OrderByDescending(p => p.StockActual)
                        .Take(5)
@@ -140,7 +143,9 @@ public class ProductoRepository : IProductoRepository
                            CategoriaId = p.CategoriaId,
                            CategoriaNombre = p.Categoria.Nombre,
                            StockActual = p.StockActual,
-                           Precio = p.Precio
+                           Precio = p.Precio,
+                           ProveedorId = p.ProveedorId,
+                           ProveedorNombre = p.Proveedor.Nombre
                        })
                         .ToListAsync();
     }
@@ -148,6 +153,8 @@ public class ProductoRepository : IProductoRepository
     public Task<List<ProductoResponseDto>> GetTop5MasValiososAsync()
     {
         return _context.Productos
+                .Include(p => p.Categoria)
+                .Include(p => p.Proveedor)
                         .AsNoTracking()
                         .OrderByDescending(p => p.Precio * p.StockActual)
                         .Take(5)
@@ -160,7 +167,9 @@ public class ProductoRepository : IProductoRepository
                             CategoriaId = p.CategoriaId,
                             CategoriaNombre = p.Categoria.Nombre,
                             StockActual = p.StockActual,
-                            Precio = p.Precio
+                            Precio = p.Precio,
+                            ProveedorId = p.ProveedorId,        // ← AGREGAR
+                            ProveedorNombre = p.Proveedor.Nombre
                         })
                          .ToListAsync();
 
@@ -169,6 +178,8 @@ public class ProductoRepository : IProductoRepository
     public Task<List<ProductoResponseDto>> GetTop5MenosStockAsync()
     {
         return _context.Productos
+                        .Include(p => p.Categoria)
+                        .Include(p => p.Proveedor)
                         .AsNoTracking()
                         .Where(p => p.StockActual > 0)
                         .OrderBy(p => p.StockActual)
@@ -182,7 +193,9 @@ public class ProductoRepository : IProductoRepository
                             CategoriaId = p.CategoriaId,
                             CategoriaNombre = p.Categoria.Nombre,
                             StockActual = p.StockActual,
-                            Precio = p.Precio
+                            Precio = p.Precio,
+                            ProveedorId = p.ProveedorId,
+                            ProveedorNombre = p.Proveedor.Nombre
                         })
                          .ToListAsync();
     }

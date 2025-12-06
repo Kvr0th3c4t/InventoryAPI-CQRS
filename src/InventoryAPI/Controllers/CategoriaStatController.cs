@@ -2,6 +2,7 @@ using InventoryAPI.Features.Stats.CategoriaStats.Queries.GetCategoriaConMasProdu
 using InventoryAPI.Features.Stats.CategoriaStats.Queries.GetCategoriaConMayorValor;
 using InventoryAPI.Features.Stats.CategoriaStats.Queries.GetDistribucionProductosPorCategoria;
 using InventoryAPI.Features.Stats.CategoriaStats.Queries.GetTotalCategorias;
+
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

@@ -5,6 +5,7 @@ using InventoryAPI.Dtos.CategoriaDtos;
 using InventoryAPI.Dtos.MovimientoStockDtos;
 using InventoryAPI.Dtos.ProductoDtos;
 using InventoryAPI.Dtos.ProveedorDtos;
+using InventoryAPI.Dtos.Pagination;
 using InventoryAPI.IntegrationTests.Infrastructure;
 using InventoryAPI.Models;
 
@@ -64,8 +65,9 @@ public class ProveedorTests : IntegrationTestsBase
         // Then
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var proveedores = await response.Content.ReadFromJsonAsync<List<ProveedorResponseDto>>();
-        proveedores.Should().NotBeNull();
+        var pagedResult = await response.Content.ReadFromJsonAsync<PagedResponse<ProveedorResponseDto>>();
+        pagedResult.Should().NotBeNull();
+        var proveedores = pagedResult!.Items;
         proveedores.Should().HaveCount(2);
     }
 

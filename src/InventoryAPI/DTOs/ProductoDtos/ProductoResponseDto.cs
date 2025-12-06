@@ -10,5 +10,7 @@ public class ProductoResponseDto
     public string CategoriaNombre { get; set; } = string.Empty;
     public int StockActual { get; set; }
     public decimal Precio { get; set; }
+    public int? ProveedorId { get; set; }
+    public string? ProveedorNombre { get; set; }
 
 }
