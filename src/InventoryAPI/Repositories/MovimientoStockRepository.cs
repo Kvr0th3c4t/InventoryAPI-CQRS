@@ -187,7 +187,7 @@ public class MovimientoStockRepository : IMovimientoStockRepository
         int? productoId,
         string orderBy,
         string order,
-        int page,
+        int pageNumber,
         int pageSize)
     {
         var query = _context.MovimientosStock
@@ -234,7 +234,7 @@ public class MovimientoStockRepository : IMovimientoStockRepository
         };
 
         var movimientos = await query
-            .Skip((page - 1) * pageSize)
+            .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
@@ -251,6 +251,6 @@ public class MovimientoStockRepository : IMovimientoStockRepository
             Fecha = m.FechaMovimiento
         }).ToList();
 
-        return new PagedResponse<MovimientoStockResponseDto>(items, totalCount, page, pageSize);
+        return new PagedResponse<MovimientoStockResponseDto>(items, totalCount, pageNumber, pageSize);
     }
 }

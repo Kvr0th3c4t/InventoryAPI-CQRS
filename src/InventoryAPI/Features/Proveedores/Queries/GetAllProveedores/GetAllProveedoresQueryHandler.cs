@@ -19,10 +19,10 @@ public class GetAllProveedoresQueryHandler
         GetAllProveedoresQuery request,
         CancellationToken cancellationToken)
     {
-        var page = request.Page < 1 ? 1 : request.Page;
+        var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
         var pageSize = request.PageSize < 1 ? 10 :
                        request.PageSize > 100 ? 100 : request.PageSize;
 
-        return await _proveedorRepository.GetAllPaginated(page, pageSize);
+        return await _proveedorRepository.GetAllPaginated(pageNumber, pageSize);
     }
 }

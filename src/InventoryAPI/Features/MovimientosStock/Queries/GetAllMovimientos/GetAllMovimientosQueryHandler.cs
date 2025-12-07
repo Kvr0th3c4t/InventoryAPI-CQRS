@@ -20,7 +20,7 @@ public class GetAllMovimientosStockQueryHandler
         CancellationToken cancellationToken)
     {
         // Validar paginación
-        var page = request.Page < 1 ? 1 : request.Page;
+        var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
         var pageSize = request.PageSize < 1 ? 10 :
                        request.PageSize > 100 ? 100 : request.PageSize;
 
@@ -41,7 +41,7 @@ public class GetAllMovimientosStockQueryHandler
             productoId: request.ProductoId,
             orderBy: orderBy,
             order: order,
-            page: page,
+            pageNumber: pageNumber,
             pageSize: pageSize
         );
     }

@@ -30,7 +30,7 @@ public class ProductosController : ControllerBase
      [FromQuery] bool? stockBajo = null,
      [FromQuery] string? orderBy = null,
      [FromQuery] string? order = null,
-     [FromQuery] int page = 1,
+     [FromQuery] int pageNumber = 1,
      [FromQuery] int pageSize = 10)
     {
         var query = new GetAllProductosQuery(
@@ -42,7 +42,7 @@ public class ProductosController : ControllerBase
             StockBajo: stockBajo,
             OrderBy: orderBy,
             Order: order,
-            Page: page,
+            Page: pageNumber,
             PageSize: pageSize
         );
 

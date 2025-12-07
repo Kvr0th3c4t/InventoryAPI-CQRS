@@ -29,6 +29,6 @@ public interface IProductoRepository : IGenericRepository<Producto>
     bool stockBajo,
     string orderBy,
     string order,
-    int page,
+    int pageNumber,
     int pageSize);
 }

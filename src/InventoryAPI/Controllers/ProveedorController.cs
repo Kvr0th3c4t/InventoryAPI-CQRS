@@ -23,10 +23,10 @@ public class ProveedorController : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetAll(
-    [FromQuery] int page = 1,
+    [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10)
     {
-        var query = new GetAllProveedoresQuery(page, pageSize);
+        var query = new GetAllProveedoresQuery(pageNumber, pageSize);
         var result = await _mediator.Send(query);
         return Ok(result);
     }

@@ -123,13 +123,13 @@ public class ProveedorRepository : IProveedorRepository
         return proveedor;
     }
 
-    public async Task<PagedResponse<ProveedorResponseDto>> GetAllPaginated(int page, int pageSize)
+    public async Task<PagedResponse<ProveedorResponseDto>> GetAllPaginated(int pageNumber, int pageSize)
     {
         var totalCount = await _context.Proveedores.CountAsync();
 
         var proveedores = await _context.Proveedores
             .OrderBy(p => p.Id)
-            .Skip((page - 1) * pageSize)
+            .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
@@ -141,6 +141,6 @@ public class ProveedorRepository : IProveedorRepository
             Telefono = p.Telefono
         }).ToList();
 
-        return new PagedResponse<ProveedorResponseDto>(items, totalCount, page, pageSize);
+        return new PagedResponse<ProveedorResponseDto>(items, totalCount, pageNumber, pageSize);
     }
 }

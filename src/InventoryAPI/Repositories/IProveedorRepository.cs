@@ -13,5 +13,5 @@ public interface IProveedorRepository : IGenericRepository<Proveedor>
     Task<PagedResponse<DistribucionProveedorDto>> GetProductosPorProveedorAsync(int pageNumber, int pageSize);
     Task<ProveedorResponseDto?> GetProveedorMasActivoAsync();
     Task<PagedResponse<DistribucionValorProveedorDto>> GetValorInventarioPorProveedorAsync(int pageNumber, int pageSize);
-    Task<PagedResponse<ProveedorResponseDto>> GetAllPaginated(int page, int pageSize);
+    Task<PagedResponse<ProveedorResponseDto>> GetAllPaginated(int pageNumber, int pageSize);
 }

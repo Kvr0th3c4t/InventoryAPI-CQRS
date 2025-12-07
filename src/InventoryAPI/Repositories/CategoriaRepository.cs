@@ -113,13 +113,13 @@ public class CategoriaRepository : ICategoriaRepository
         await _context.SaveChangesAsync();
         return categoria;
     }
-    public async Task<PagedResponse<CategoriaResponseDto>> GetAllPaginated(int page, int pageSize)
+    public async Task<PagedResponse<CategoriaResponseDto>> GetAllPaginated(int pageNumber, int pageSize)
     {
         var totalCount = await _context.Categorias.CountAsync();
 
         var categorias = await _context.Categorias
             .OrderBy(c => c.Id)
-            .Skip((page - 1) * pageSize)
+            .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
@@ -130,6 +130,6 @@ public class CategoriaRepository : ICategoriaRepository
             Descripcion = c.Descripcion
         }).ToList();
 
-        return new PagedResponse<CategoriaResponseDto>(items, totalCount, page, pageSize);
+        return new PagedResponse<CategoriaResponseDto>(items, totalCount, pageNumber, pageSize);
     }
 }

@@ -53,23 +53,23 @@ public class ProductoRepository : IProductoRepository
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public Task<decimal> GetPrecioMasAltoAsync()
+    public async Task<decimal> GetPrecioMasAltoAsync()
     {
-        return _context.Productos
+        return await _context.Productos
                         .AsNoTracking()
                         .MaxAsync(p => p.Precio);
     }
 
-    public Task<decimal> GetPrecioMasBajoAsync()
+    public async Task<decimal> GetPrecioMasBajoAsync()
     {
-        return _context.Productos
+        return await _context.Productos
                         .AsNoTracking()
                         .MinAsync(p => p.Precio);
     }
 
-    public Task<decimal> GetPrecioPromedioAsync()
+    public async Task<decimal> GetPrecioPromedioAsync()
     {
-        return _context.Productos
+        return await _context.Productos
                         .AsNoTracking()
                         .AverageAsync(p => p.Precio);
     }
@@ -121,32 +121,32 @@ public class ProductoRepository : IProductoRepository
         return new PagedResponse<DistribucionProveedorDto>(items, totalCount, pageNumber, pageSize);
     }
 
-    public Task<int> GetProductosSinStockAsync()
+    public async Task<int> GetProductosSinStockAsync()
     {
-        return _context.Productos
+        return await _context.Productos
                     .AsNoTracking()
                     .CountAsync(p => p.StockActual == 0);
     }
 
-    public Task<int> GetProductosStockBajoAsync()
+    public async Task<int> GetProductosStockBajoAsync()
     {
-        return _context.Productos
+        return await _context.Productos
                     .AsNoTracking()
                     .CountAsync(p => p.StockActual <= p.StockMinimo);
     }
 
-    public Task<int> GetProductosUltimos30DiasAsync()
+    public async Task<int> GetProductosUltimos30DiasAsync()
     {
         var fechaLimite = DateTime.Now.AddDays(-30);
 
-        return _context.Productos
+        return await _context.Productos
                         .AsNoTracking()
                         .CountAsync(p => p.FechaCreacion >= fechaLimite);
     }
 
-    public Task<List<ProductoResponseDto>> GetTop5MasStockAsync()
+    public async Task<List<ProductoResponseDto>> GetTop5MasStockAsync()
     {
-        return _context.Productos
+        return await _context.Productos
                         .Include(p => p.Proveedor)
                        .AsNoTracking()
                        .OrderByDescending(p => p.StockActual)
@@ -167,9 +167,9 @@ public class ProductoRepository : IProductoRepository
                         .ToListAsync();
     }
 
-    public Task<List<ProductoResponseDto>> GetTop5MasValiososAsync()
+    public async Task<List<ProductoResponseDto>> GetTop5MasValiososAsync()
     {
-        return _context.Productos
+        return await _context.Productos
                 .Include(p => p.Categoria)
                 .Include(p => p.Proveedor)
                         .AsNoTracking()
@@ -185,16 +185,16 @@ public class ProductoRepository : IProductoRepository
                             CategoriaNombre = p.Categoria.Nombre,
                             StockActual = p.StockActual,
                             Precio = p.Precio,
-                            ProveedorId = p.ProveedorId,        // ← AGREGAR
+                            ProveedorId = p.ProveedorId,
                             ProveedorNombre = p.Proveedor.Nombre
                         })
                          .ToListAsync();
 
     }
 
-    public Task<List<ProductoResponseDto>> GetTop5MenosStockAsync()
+    public async Task<List<ProductoResponseDto>> GetTop5MenosStockAsync()
     {
-        return _context.Productos
+        return await _context.Productos
                         .Include(p => p.Categoria)
                         .Include(p => p.Proveedor)
                         .AsNoTracking()
@@ -217,9 +217,9 @@ public class ProductoRepository : IProductoRepository
                          .ToListAsync();
     }
 
-    public Task<int> GetTotalProductosAsync()
+    public async Task<int> GetTotalProductosAsync()
     {
-        return _context.Productos
+        return await _context.Productos
                     .AsNoTracking()
                     .CountAsync();
     }
@@ -242,16 +242,16 @@ public class ProductoRepository : IProductoRepository
     }
 
     public async Task<PagedResponse<ProductoResponseDto>> GetAllPaginated(
-    string? search,
-    int? categoriaId,
-    int? proveedorId,
-    decimal? precioMin,
-    decimal? precioMax,
-    bool stockBajo,
-    string orderBy,
-    string order,
-    int page,
-    int pageSize)
+        string? search,
+        int? categoriaId,
+        int? proveedorId,
+        decimal? precioMin,
+        decimal? precioMax,
+        bool stockBajo,
+        string orderBy,
+        string order,
+        int pageNumber,
+        int pageSize)
     {
         var query = _context.Productos
             .Include(p => p.Categoria)
@@ -315,7 +315,7 @@ public class ProductoRepository : IProductoRepository
         };
 
         var productos = await query
-            .Skip((page - 1) * pageSize)
+            .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
@@ -333,7 +333,7 @@ public class ProductoRepository : IProductoRepository
             ProveedorNombre = p.Proveedor?.Nombre
         }).ToList();
 
-        return new PagedResponse<ProductoResponseDto>(items, totalCount, page, pageSize);
+        return new PagedResponse<ProductoResponseDto>(items, totalCount, pageNumber, pageSize);
     }
 
 

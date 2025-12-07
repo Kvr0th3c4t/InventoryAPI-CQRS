@@ -12,6 +12,6 @@ public interface ICategoriaRepository : IGenericRepository<Categoria>
     int pageSize);
     Task<CategoriaResponseDto?> GetCategoriaConMasProductosAsync();
     Task<CategoriaResponseDto?> GetCategoriaConMayorValorAsync();
-    Task<PagedResponse<CategoriaResponseDto>> GetAllPaginated(int page, int pageSize);
+    Task<PagedResponse<CategoriaResponseDto>> GetAllPaginated(int pageNumber, int pageSize);
 
 }

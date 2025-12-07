@@ -12,6 +12,6 @@ public record GetAllMovimientosQuery(
     int? ProductoId = null,
     string? OrderBy = null,
     string? Order = null,
-    int Page = 1,
+    int PageNumber = 1,
     int PageSize = 10
 ) : IRequest<PagedResponse<MovimientoStockResponseDto>>;

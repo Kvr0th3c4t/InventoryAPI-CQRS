@@ -20,7 +20,7 @@ public class GetAllProductosQueryHandler
         CancellationToken cancellationToken)
     {
         // Validar paginación
-        var page = request.Page < 1 ? 1 : request.Page;
+        var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
         var pageSize = request.PageSize < 1 ? 10 :
                        request.PageSize > 100 ? 100 : request.PageSize;
 
@@ -43,7 +43,7 @@ public class GetAllProductosQueryHandler
             stockBajo: request.StockBajo ?? false,
             orderBy: orderBy,
             order: order,
-            page: page,
+            pageNumber: pageNumber,
             pageSize: pageSize
         );
     }

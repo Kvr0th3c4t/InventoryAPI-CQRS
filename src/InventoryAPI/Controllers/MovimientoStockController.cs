@@ -28,7 +28,7 @@ public class MovimientosStockController : ControllerBase
     [FromQuery] int? productoId = null,
     [FromQuery] string? orderBy = null,
     [FromQuery] string? order = null,
-    [FromQuery] int page = 1,
+    [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10)
     {
         var query = new GetAllMovimientosQuery(
@@ -38,7 +38,7 @@ public class MovimientosStockController : ControllerBase
             ProductoId: productoId,
             OrderBy: orderBy,
             Order: order,
-            Page: page,
+            PageNumber: pageNumber,
             PageSize: pageSize
         );
 
