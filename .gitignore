@@ -35,3 +35,13 @@ packages/
 # OS
 .DS_Store
 Thumbs.db
+
+# Production secrets
+**/appsettings.Production.json
+*.env
+*.env.production
+
+# Build
+**/bin/
+**/obj/
+**/publish/
