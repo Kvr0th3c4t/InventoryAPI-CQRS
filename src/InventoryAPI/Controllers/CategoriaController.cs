@@ -8,9 +8,11 @@ using InventoryAPI.Dtos.Pagination;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InventoryAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 

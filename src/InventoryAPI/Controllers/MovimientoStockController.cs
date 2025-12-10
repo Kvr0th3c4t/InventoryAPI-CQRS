@@ -6,9 +6,11 @@ using InventoryAPI.Features.MovimientosStock.Queries.GetMovimientoById;
 using InventoryAPI.Features.MovimientosStock.Commands.CreateMovimiento;
 using FluentValidation;
 using InventoryAPI.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InventoryAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class MovimientosStockController : ControllerBase

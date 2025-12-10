@@ -6,6 +6,7 @@ using InventoryAPI.Dtos.ProductoDtos;
 using InventoryAPI.Dtos.ProveedorDtos;
 using InventoryAPI.Dtos.StatsDtos.ProductosStatsDto;
 using InventoryAPI.IntegrationTests.Infrastructure;
+using InventoryAPI.Dtos.Pagination;
 
 namespace InventoryAPI.IntegrationTests.Tests.Stats;
 
@@ -87,7 +88,7 @@ public class CategoriaStatsTests : IntegrationTestsBase
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var distribucion = await response.Content.ReadFromJsonAsync<List<DistribucionCategoriaDto>>();
+        var distribucion = await response.Content.ReadFromJsonAsync<PagedResponse<DistribucionCategoriaDto>>();
 
         distribucion.Should().NotBeNull();
         distribucion.Should().HaveCount(3);

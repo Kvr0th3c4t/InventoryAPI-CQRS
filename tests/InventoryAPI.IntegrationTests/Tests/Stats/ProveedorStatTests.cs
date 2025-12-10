@@ -10,6 +10,7 @@ using InventoryAPI.Dtos.StatsDtos.ProductosStatsDto;
 using InventoryAPI.Models;
 using InventoryAPI.Enums;
 using InventoryAPI.IntegrationTests.Infrastructure;
+using InventoryAPI.Dtos.Pagination;
 
 namespace InventoryAPI.IntegrationTests.Tests.Stats;
 
@@ -136,7 +137,7 @@ public class ProveedorStatsTests : IntegrationTestsBase
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var distribucion = await response.Content.ReadFromJsonAsync<List<DistribucionProveedorDto>>();
+        var distribucion = await response.Content.ReadFromJsonAsync<PagedResponse<DistribucionProveedorDto>>();
 
         distribucion.Should().NotBeNull();
         distribucion.Should().HaveCount(3);
@@ -162,7 +163,7 @@ public class ProveedorStatsTests : IntegrationTestsBase
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var valores = await response.Content.ReadFromJsonAsync<List<DistribucionValorProveedorDto>>();
+        var valores = await response.Content.ReadFromJsonAsync<PagedResponse<DistribucionValorProveedorDto>>();
 
         valores.Should().NotBeNull();
         valores.Should().HaveCount(3);

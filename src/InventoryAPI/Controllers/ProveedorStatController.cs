@@ -3,10 +3,12 @@ using InventoryAPI.Features.Stats.ProveedorStats.Queries.GetProveedoresMasActivo
 using InventoryAPI.Features.Stats.ProveedorStats.Queries.GetTotalProveedores;
 using InventoryAPI.Features.Stats.ProveedorStats.Queries.GetValorInventarioPorProveedor;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("/api/[controller]")]
 

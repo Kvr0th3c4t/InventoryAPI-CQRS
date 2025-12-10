@@ -7,9 +7,11 @@ using InventoryAPI.Features.Proveedores.Queries.GetProveedorById;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using InventoryAPI.Dtos.Pagination;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InventoryAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ProveedorController : ControllerBase

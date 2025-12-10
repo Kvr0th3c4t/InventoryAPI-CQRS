@@ -12,10 +12,12 @@ using InventoryAPI.Features.Stats.ProductoStats.Queries.GetTop5MenosStock;
 using InventoryAPI.Features.Stats.ProductoStats.Queries.GetTotalProductos;
 using InventoryAPI.Features.Stats.ProductoStats.Queries.GetValorTotalInventario;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ProductoStatController : ControllerBase

@@ -127,18 +127,18 @@ public class MovimientoStockRepository : IMovimientoStockRepository
     public Task<List<ProductoMasMovidoDto>> GetProductosMasMovidosAsync()
     {
         return _context.MovimientosStock
-                        .Include(m => m.Producto)
-                        .AsNoTracking()
-                        .GroupBy(m => m.Producto)
-                        .OrderByDescending(g => g.Count())
-                        .Take(5)
-                        .Select(g => new ProductoMasMovidoDto
-                        {
-                            ProductoId = g.Key.Id,
-                            NombreProducto = g.Key.Nombre,
-                            TotalMovimientos = g.Count()
-                        })
-                        .ToListAsync();
+            .AsNoTracking()
+            .Where(m => m.ProductoId != null)
+            .GroupBy(m => m.ProductoId)
+            .OrderByDescending(g => g.Count())
+            .Take(5)
+            .Select(g => new ProductoMasMovidoDto
+            {
+                ProductoId = g.Key!,
+                NombreProducto = g.First().Producto.Nombre,
+                TotalMovimientos = g.Count()
+            })
+            .ToListAsync();
     }
 
     public async Task<PagedResponse<TipoMovimientoDto>> GetTipoMovimientosAsync(

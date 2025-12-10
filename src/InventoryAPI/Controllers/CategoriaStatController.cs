@@ -5,10 +5,12 @@ using InventoryAPI.Features.Stats.CategoriaStats.Queries.GetDistribucionProducto
 using InventoryAPI.Features.Stats.CategoriaStats.Queries.GetTotalCategorias;
 
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("/api/[controller]")]
 public class CategoriaStatController : ControllerBase

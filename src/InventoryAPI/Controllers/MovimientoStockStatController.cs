@@ -7,10 +7,12 @@ using InventoryAPI.Features.Stats.MovimientoStats.Queries.GetProductosMasMovidos
 using InventoryAPI.Features.Stats.MovimientoStats.Queries.GetTipoMovimientos;
 using InventoryAPI.Features.Stats.MovimientoStats.Queries.GetTotalMovimientosUltimos30Dias;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("/api/[controller]")]
 

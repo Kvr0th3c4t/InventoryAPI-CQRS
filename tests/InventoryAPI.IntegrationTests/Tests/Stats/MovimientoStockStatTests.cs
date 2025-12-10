@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Repositories;
 
-public class MovimientoStockRepository : IMovimientoStockRepository
+public class MovimientoStockRepository : IntegrationTestsBase
 {
     private readonly ApplicationDbContext _context;
 

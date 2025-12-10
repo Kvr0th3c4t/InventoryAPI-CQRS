@@ -6,9 +6,11 @@ using InventoryAPI.Features.Productos.Queries.GetProductoById;
 using InventoryAPI.Features.Productos.Queries.GetAllProductos;
 using InventoryAPI.Features.Productos.DeleteProducto;
 using InventoryAPI.Features.Productos.Commands.UpdateProducto;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InventoryAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ProductosController : ControllerBase
@@ -42,7 +44,7 @@ public class ProductosController : ControllerBase
             StockBajo: stockBajo,
             OrderBy: orderBy,
             Order: order,
-            Page: pageNumber,
+            PageNumber: pageNumber,
             PageSize: pageSize
         );
 

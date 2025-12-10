@@ -10,7 +10,9 @@ public class DeleteProductoCommandHandler : IRequestHandler<DeleteProductoComman
     private readonly IProductoRepository _productoRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public DeleteProductoCommandHandler(IProductoRepository productoRepository, IUnitOfWork unitOfWork)
+    public DeleteProductoCommandHandler(
+        IProductoRepository productoRepository,
+        IUnitOfWork unitOfWork)
     {
         _productoRepository = productoRepository;
         _unitOfWork = unitOfWork;
@@ -27,6 +29,5 @@ public class DeleteProductoCommandHandler : IRequestHandler<DeleteProductoComman
         await _unitOfWork.SaveChangesAsync();
 
         return true;
-
     }
 }
