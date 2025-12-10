@@ -36,7 +36,21 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+    if (builder.Environment.IsDevelopment())
+    {
+        // Desarrollo: SQL Server
+        options.UseSqlServer(connectionString);
+    }
+    else
+    {
+        // Producción: MySQL/MariaDB
+        var serverVersion = ServerVersion.AutoDetect(connectionString);
+        options.UseMySql(connectionString, serverVersion);
+    }
+});
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
@@ -84,12 +98,34 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowBlazor", policy =>
+    if (builder.Environment.IsDevelopment())
     {
-        policy.WithOrigins("https://localhost:7002", "http://localhost:7002", "https://localhost:5285", "http://localhost:5285")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
+        options.AddPolicy("AllowBlazor", policy =>
+        {
+            policy.WithOrigins(
+                "https://localhost:7002",
+                "http://localhost:7002",
+                "https://localhost:5285",
+                "http://localhost:5285"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+        });
+    }
+    else
+    {
+        options.AddPolicy("Production", policy =>
+        {
+            policy.WithOrigins(
+                "https://inventoryfront.adriancc.com",
+                "http://inventoryfront.adriancc.com"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+        });
+    }
 });
 
 builder.Services.AddMediatR(cfg =>
@@ -107,7 +143,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        context.Database.Migrate(); // Aplica las migrations pendientes
+        context.Database.Migrate();
         Console.WriteLine("✅ Migrations aplicadas correctamente");
     }
     catch (Exception ex)
@@ -123,7 +159,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowBlazor");
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("AllowBlazor");
+}
+else
+{
+    app.UseCors("Production");
+}
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
